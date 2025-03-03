@@ -1,9 +1,5 @@
 @use 'variables' as var;
 
-h1 {
-    color: var.$red-color;
-}
-
 .sidebar {
     position: fixed;
     top: 0;
