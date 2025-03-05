@@ -1,1 +1,23 @@
-<h1>Welcome</h1>
+<div class="mt-4">
+    <div class="row">
+
+        {{#each courses}}
+        <div class="col-sm-6 col-lg-4">
+            <div class="card card-course-item" style="width: 18rem;">
+                <a href="/courses/{{this.slug}}">
+                    <img src="https://img.youtube.com/vi/{{this.ytbVideoId}}/maxresdefault.jpg" class="card-img-top"
+                        alt="{{this.title}}">
+                </a>
+
+                <div class="card-body">
+                    <a href="/courses/{{this.slug}}">
+                        <h5 class="card-title">{{this.title}}</h5>
+                    </a>
+                    <a href="/courses/{{this.slug}}" class="btn btn-primary">Xem khóa học</a>
+                </div>
+            </div>
+        </div>
+        {{/each}}
+
+    </div>
+</div>

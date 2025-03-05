@@ -1,0 +1,22 @@
+<div class="mt-4">
+    <h3>Sửa khóa học</h3>
+
+    <form autocomplete="off" method="post" action="/courses/{{course._id}}?_method=PUT">
+        <div class="mb-3">
+            <label for="title" class="form-label">Tên khóa học</label>
+            <input type="text" class="form-control" value="{{course.title}}" id="title" name="title">
+        </div>
+
+        <div class="mb-3">
+            <label for="ytbVideoLink" class="form-label">Link video</label>
+            <input type="text" class="form-control" value="{{course.ytbVideoLink}}" id="ytbVideoLink" name="ytbVideoLink">
+        </div>
+
+        <div class="mb-3">
+            <label for="description" class="form-label">Mô tả</label>
+            <textarea class="form-control" id="description" name="description">{{course.description}}</textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Lưu</button>
+    </form>
+</div>
