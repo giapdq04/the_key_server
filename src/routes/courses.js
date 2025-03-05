@@ -5,6 +5,7 @@ const courseCtrl = require('../app/controllers/CourseController')
 
 router.get('/create', courseCtrl.create)
 router.post('/store', courseCtrl.store)
+router.post('/handle-form-actions', courseCtrl.handleFormActions)
 router.get('/stored-courses', courseCtrl.storedCourse)
 router.get('/trash-course', courseCtrl.trashCourse)
 router.get('/:id/edit', courseCtrl.edit)

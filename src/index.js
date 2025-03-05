@@ -23,6 +23,11 @@ app.use(express.json())
 
 app.use(methodOverride('_method'))
 
+// Add request to response locals
+app.use((req, res, next) => {
+    res.locals.req = req;
+    next();
+});
 
 // HTTP logger
 app.use(morgan('combined'))
@@ -30,8 +35,11 @@ app.use(morgan('combined'))
 // Template engine
 app.engine('hbs', engine({
     extname: '.hbs',
-    helpers:{
-        sum: (a,b) => a+b,
+    helpers: {
+        sum: (a, b) => a + b,
+        isActive: function (path) {
+            return path === this.req.originalUrl ? 'active' : '';
+        }
     }
 }));
 app.set('view engine', 'hbs');

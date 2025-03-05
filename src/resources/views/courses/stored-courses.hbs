@@ -13,8 +13,8 @@
         </div>
 
         <select oninvalid="this.setCustomValidity('Vui lòng chọn hành động!')" oninput="this.setCustomValidity('')"
-                class="form-select form-select-sm
-         checkbox-select-all-options" name="action" required aria-label="Default select example">
+                class="form-select form-select-sm checkbox-select-all-options" name="action" required
+                aria-label="Default select example">
             <option selected value="">Chọn hành động</option>
             <option value="delete">Xóa</option>
         </select>
@@ -29,17 +29,9 @@
         <tr>
             <th scope="col"></th>
             <th scope="col">#</th>
-            <th scope="col">Tên khóa học
-                Tên khóa học
-
-            </th>
-            <th scope="col">Mô tả
-                Mô tả
-
-            </th>
-            <th scope="col" colspan="2">Cập nhật gần nhất
-                Cập nhật gần nhất
-            </th>
+            <th scope="col">Tên khóa học</th>
+            <th scope="col">Mô tả</th>
+            <th scope="col" colspan="2">Cập nhật gần nhất</th>
         </tr>
         </thead>
         <tbody>
@@ -61,13 +53,15 @@
                 <td>
                     <a href="/courses/{{this._id}}/edit" class="btn btn-primary">Sửa</a>
                     <button class="btn btn-danger" data-id="{{this._id}}" data-bs-toggle="modal"
-                            data-bs-target="#delete-course-modal">Xóa</button>
+                            data-bs-target="#delete-course-modal">Xóa
+                    </button>
                 </td>
             </tr>
         {{else}}
             <tr>
-                <td colspan="5" class="text-center">Bạn chưa đăng khóa học nào. <a href="/courses/create">Đăng khóa
-                    học</a></td>
+                <td colspan="5" class="text-center">Bạn chưa đăng khóa học nào.
+                    <a href="/courses/create">Đăng khóa học</a>
+                </td>
             </tr>
 
         {{/each}}
@@ -94,17 +88,33 @@
     </div>
 </div>
 
-{{!-- Delete hidden form --}}
-<form name="delete-course-form" method="post">
+{{!-- Confirm delete all modal --}}
+<div id="delete-courses-modal" class="modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc muốn xóa các khóa học đã chọn?</p>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-delete-courses" type="button" class="btn btn-danger">Xóa bỏ</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-</form>
+{{!-- Delete hidden form --}}
+<form name="delete-course-form" method="post"></form>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
 
         let courseId
         var deleteForm = document.forms['delete-course-form']
-        var containerForm = document.forms['container-form']
         var btnDeleteCourse = document.getElementById('btn-delete-course')
         var checkboxAll = $('#checkbox-all')
         var courseItemCheckbox = $('input[name="courseIds[]"]')

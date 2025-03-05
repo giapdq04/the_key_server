@@ -70,7 +70,7 @@ class CourseController {
                 course: convertCourse
             })
         } catch (e) {
-            console.log()
+            console.log(e)
         }
     }
 
@@ -133,6 +133,22 @@ class CourseController {
         try {
             await Course.restore({_id: req.params.id})
             res.redirect('back')
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
+    // [POST] /courses/handle-form-actions
+    async handleFormActions(req, res) {
+        try {
+            switch (req.body.action) {
+                case 'delete':
+                    await Course.delete({_id:req.body.courseIds})
+                    res.redirect('back')
+                    break
+                default:
+                    res.json({message: 'Action is invalid!'})
+            }
         } catch (e) {
             console.log(e)
         }
