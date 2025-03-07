@@ -122,10 +122,24 @@ class CourseController {
     // [DELETE] /courses/:id/force
     async forceDelete(req, res) {
         try {
-            await Course.deleteOne({ _id: req.params.id })
-            res.redirect('back')
+            const courseId = req.params.id;
+
+            // Permanently delete all lessons of this course
+            await Lesson.deleteMany({ courseID: courseId });
+
+            // Permanently delete all sections of this course
+            await Section.deleteMany({ courseID: courseId });
+
+            // Permanently delete the course itself
+            await Course.deleteOne({ _id: courseId });
+
+            res.redirect('back');
         } catch (e) {
-            console.log(e)
+            console.log(e);
+            res.status(500).json({
+                success: false,
+                message: 'Internal server error'
+            });
         }
     }
 
