@@ -1,0 +1,125 @@
+<!-- Danh sách bài học -->
+<div class="accordion" id="lessonAccordion">
+    {{#each sections}}
+    <div class="accordion-item">
+        <h2 class="accordion-header">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                data-bs-target="#collapse{{@index}}">
+                {{this.title}}
+            </button>
+        </h2>
+        <div id="collapse{{@index}}" class="accordion-collapse collapse" data-bs-parent="#lessonAccordion">
+            <div class="accordion-body">
+                <ul class="list-group" id="lessonList-{{@index}}">
+                    {{#each this.lessons}}
+                    <li class="list-group-item">{{this.title}}</li>
+                    {{/each}}
+                </ul>
+                <!-- Form thêm bài học -->
+                <div class="mt-2">
+                    <a href="/courses/{{../course._id}}/sections/{{this._id}}/lessons/create" class="btn btn-success">
+                        Thêm bài học
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{else}}
+    <h3>Không có bài học nào</h3>
+    {{/each}}
+</div>
+
+{{!-- dialog thêm bài học --}}
+<div class="modal fade" id="addLessonModal" tabindex="-1" aria-labelledby="addLessonModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addLessonModalLabel">Thêm bài học</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <!-- Lesson type selection -->
+                    <div class="mb-3">
+                        <label class="form-label">Loại bài học</label>
+                        <div class="d-flex gap-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" value="video" id="videoCheck"
+                                    name="lessonType" checked>
+                                <label class="form-check-label" for="videoCheck">
+                                    <i class="bi bi-play-circle me-1"></i>Video
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" value="document" id="documentCheck"
+                                    name="lessonType">
+                                <label class="form-check-label" for="documentCheck">
+                                    <i class="bi bi-file-earmark-text me-1"></i>Tài liệu
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" value="exercise" id="exerciseCheck"
+                                    name="lessonType">
+                                <label class="form-check-label" for="exerciseCheck">
+                                    <i class="bi bi-pencil-square me-1"></i>Bài tập
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Title field -->
+                    <div class="mb-3">
+                        <label for="lessonTitle" class="form-label">Tiêu đề</label>
+                        <input type="text" class="form-control" id="lessonTitle" name="lessonTitle" required>
+                    </div>
+
+                    <!-- Dynamic fields based on selection -->
+                    <div id="videoField" class="mb-3 d-none">
+                        <label for="lessonVideo" class="form-label">Link Video</label>
+                        <input type="text" class="form-control" id="lessonVideo" name="lessonVideo">
+                    </div>
+
+                    <div id="documentField" class="mb-3 d-none">
+                        <label for="lessonResource" class="form-label">Link Tài liệu</label>
+                        <input type="text" class="form-control" id="lessonResource" name="lessonResource">
+                    </div>
+
+                    <div id="exerciseField" class="mb-3 d-none">
+                        <label for="lessonExercise" class="form-label">Nội dung bài tập</label>
+                        <textarea class="form-control" id="lessonExercise" name="lessonExercise"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Thêm</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Get all radio buttons and fields
+        const lessonTypes = document.getElementsByName('lessonType');
+        const videoField = document.getElementById('videoField');
+        const documentField = document.getElementById('documentField');
+        const exerciseField = document.getElementById('exerciseField');
+
+        // Function to show selected field and hide others
+        function toggleFields(selectedType) {
+            videoField.classList.toggle('d-none', selectedType !== 'video');
+            documentField.classList.toggle('d-none', selectedType !== 'document');
+            exerciseField.classList.toggle('d-none', selectedType !== 'exercise');
+        }
+
+        // Add change event listeners to radio buttons
+        lessonTypes.forEach(radio => {
+            radio.addEventListener('change', function () {
+                toggleFields(this.value);
+            });
+        });
+
+        // Show video field by default
+        toggleFields('video');
+    });
+</script>

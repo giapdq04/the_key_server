@@ -7,11 +7,30 @@ class AuthController {
     }
 
     // [POST] /login
-    loginPost(req, res) {
-        // Xử lý logic đăng nhập ở đây
-        const { username, password } = req.body;
-        // TODO: Validate credentials
-        res.redirect('/');
+    async loginPost(req, res) {
+        try {
+            const formData = req.body;
+            const user = await Admin.findOne({
+                admin_name: formData.admin_name,
+                password: formData.password
+            });
+
+            if (user) {
+                req.session.user = user;
+                res.redirect('/');
+            } else {
+                res.render('login', {
+                    layout: false,
+                    error: 'Tên đăng nhập hoặc mật khẩu không đúng'
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            res.render('login', {
+                layout: false,
+                error: 'Đã xảy ra lỗi, vui lòng thử lại'
+            });
+        }
     }
 
     async registerPost(req, res) {

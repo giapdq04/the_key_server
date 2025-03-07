@@ -1,4 +1,4 @@
-<form class="mt-4" name="container-form" method="post" action="/courses/handle-form-actions">
+<form class="mt-4" name="container-form" method="post" action="/courses/trash/handle-form-actions">
 
     <h3>Khóa học đã xóa</h3>
     <a href="/courses/stored-courses" class="btn btn-success">Quay lại</a>
@@ -12,9 +12,11 @@
         </div>
 
         <select oninvalid="this.setCustomValidity('Vui lòng chọn hành động!')" oninput="this.setCustomValidity('')"
-                class="form-select form-select-sm checkbox-select-all-options" name="action" required aria-label="Default select example">
+            class="form-select form-select-sm checkbox-select-all-options" name="action" required
+            aria-label="Default select example">
             <option selected value="">Chọn hành động</option>
-            <option value="delete">Xóa</option>
+            <option value="delete">Xóa vĩnh viễn</option>
+            <option value="restore">Khôi phục</option>
         </select>
 
         <button class="btn btn-primary btn-sm check-all-submit-btn" disabled>
@@ -24,25 +26,25 @@
 
     <table class="table">
         <thead>
-        <tr>
-            <th scope="col"></th>
-            <th scope="col">#</th>
-            <th scope="col">Tên khóa học
-                Tên khóa học
+            <tr>
+                <th scope="col"></th>
+                <th scope="col">#</th>
+                <th scope="col">Tên khóa học
+                    Tên khóa học
 
-            </th>
-            <th scope="col">Mô tả
-                Mô tả
+                </th>
+                <th scope="col">Mô tả
+                    Mô tả
 
-            </th>
-            <th scope="col" colspan="2">Thời gian xóa
-                Thời gian xóa
-            </th>
-        </tr>
+                </th>
+                <th scope="col" colspan="2">Thời gian xóa
+                    Thời gian xóa
+                </th>
+            </tr>
         </thead>
         <tbody>
 
-        {{#each courses}}
+            {{#each courses}}
             <tr>
                 <td>
                     <div class="form-check">
@@ -59,17 +61,17 @@
                 <td>
                     <button class="btn btn-primary btn-restore" data-id="{{this._id}}">Khôi phục</button>
                     <button class="btn btn-danger" data-id="{{this._id}}" data-bs-toggle="modal"
-                            data-bs-target="#delete-course-modal">Xóa vĩnh viễn
+                        data-bs-target="#delete-course-modal">Xóa vĩnh viễn
                     </button>
                 </td>
             </tr>
-        {{else}}
+            {{else}}
             <tr>
                 <td colspan="5" class="text-center">Thùng rác trống. <a href="/courses/stored-courses">Danh sách khóa
-                    học</a></td>
+                        học</a></td>
             </tr>
 
-        {{/each}}
+            {{/each}}
         </tbody>
     </table>
 </form>

@@ -1,0 +1,99 @@
+<div class="course-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1>{{course.title}}</h1>
+                <p class="lead mb-0">{{course.description}}</p>
+            </div>
+            <div class="col-md-4">
+                <img src="https://img.youtube.com/vi/{{course.ytbVideoId}}/maxresdefault.jpg" class="img-fluid rounded"
+                    alt="{{course.title}}">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Sections List -->
+            <div class="sections-list mb-4">
+                {{#each sections}}
+                <div class="section-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{{this.title}}</h5>
+                    </div>
+                    <div class="lessons-list mt-3">
+                        {{#each this.lessons}}
+                        <div class="lesson-item d-flex justify-content-between align-items-center p-2">
+                            <span>{{this.title}}</span>
+                            <button class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                        {{/each}}
+                    </div>
+                </div>
+                {{/each}}
+            </div>
+
+            <!-- Add Section Button -->
+            <button class="add-section-btn" data-bs-toggle="modal" data-bs-target="#addSectionModal">
+                <i class="bi bi-plus-lg"></i> Thêm chương mới
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Add Section Modal -->
+<div class="modal fade" id="addSectionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thêm chương mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/courses/{{course._id}}/sections" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="sectionTitle" class="form-label">Tên chương</label>
+                        <input type="text" class="form-control" id="sectionTitle" name="title" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Thêm chương</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Lesson Modal -->
+<div class="modal fade" id="addLessonModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Thêm bài học mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addLessonForm" action="/courses/{{course._id}}/lessons" method="POST">
+                <input type="hidden" name="sectionId" id="sectionId">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="lessonTitle" class="form-label">Tên bài học</label>
+                        <input type="text" class="form-control" id="lessonTitle" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="videoUrl" class="form-label">Link video Youtube</label>
+                        <input type="url" class="form-control" id="videoUrl" name="videoUrl" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Thêm bài học</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

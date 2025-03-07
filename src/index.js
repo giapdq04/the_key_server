@@ -2,6 +2,7 @@ require('dotenv').config();
 
 const express = require('express')
 const morgan = require('morgan')
+const session = require('express-session')
 const { engine } = require('express-handlebars');
 const path = require("path");
 const methodOverride = require('method-override')
@@ -13,6 +14,17 @@ const db = require('./config/db')
 
 // Connect to DB
 db.connect()
+
+// Add session middleware before routes
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'your_secret_key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+}))
 
 app.use(express.static(path.join(__dirname, 'public')))
 
@@ -29,6 +41,12 @@ app.use((req, res, next) => {
     next();
 });
 
+// Add user to response locals
+app.use((req, res, next) => {
+    res.locals.user = req.session?.user || null;
+    next();
+});
+
 // HTTP logger
 app.use(morgan('combined'))
 
@@ -39,6 +57,10 @@ app.engine('hbs', engine({
         sum: (a, b) => a + b,
         isActive: function (path) {
             return path === this.req.originalUrl ? 'active' : '';
+        },
+        concat: function (...args) {
+            args.pop(); // Remove handlebars options object
+            return args.join('');
         }
     }
 }));

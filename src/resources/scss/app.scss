@@ -53,9 +53,78 @@
     margin: 0 10px;
 }
 
-.form-check-input{
+.form-check-input {
 
-    &:hover{
+    &:hover {
         cursor: pointer;
     }
+}
+
+.navbar {
+    height: 60px;
+    padding: 0.5rem 1.5rem;
+
+    .dropdown-toggle::after {
+        margin-left: 0.5rem;
+    }
+
+    .dropdown-menu {
+        min-width: 200px;
+        padding: 0.5rem 0;
+
+        .dropdown-item {
+            padding: 0.5rem 1rem;
+
+            &:hover {
+                background-color: #f8f9fa;
+            }
+
+            i {
+                width: 1rem;
+            }
+        }
+    }
+
+    .btn-outline-secondary {
+        &:hover {
+            background-color: #f8f9fa;
+        }
+    }
+}
+
+.courseName {
+    color: #000;
+    text-decoration: none;
+
+    &:hover {
+        color: red;
+        font-weight: 500;
+    }
+}
+
+.course-header {
+    background: #f8f9fa;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    border-radius: 10px;
+}
+
+.section-item {
+    background: #fff;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid #dee2e6;
+}
+
+.add-section-btn {
+    width: 100%;
+    border: 2px dashed #dee2e6;
+    padding: 1rem;
+    border-radius: 8px;
+    background: transparent;
+}
+
+.add-section-btn:hover {
+    background: #f8f9fa;
 }

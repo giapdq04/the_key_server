@@ -13,8 +13,8 @@
         </div>
 
         <select oninvalid="this.setCustomValidity('Vui lòng chọn hành động!')" oninput="this.setCustomValidity('')"
-                class="form-select form-select-sm checkbox-select-all-options" name="action" required
-                aria-label="Default select example">
+            class="form-select form-select-sm checkbox-select-all-options" name="action" required
+            aria-label="Default select example">
             <option selected value="">Chọn hành động</option>
             <option value="delete">Xóa</option>
         </select>
@@ -26,17 +26,17 @@
 
     <table class="table">
         <thead>
-        <tr>
-            <th scope="col"></th>
-            <th scope="col">#</th>
-            <th scope="col">Tên khóa học</th>
-            <th scope="col">Mô tả</th>
-            <th scope="col" colspan="2">Cập nhật gần nhất</th>
-        </tr>
+            <tr>
+                <th scope="col"></th>
+                <th scope="col">#</th>
+                <th scope="col">Tên khóa học</th>
+                <th scope="col">Mô tả</th>
+                <th scope="col" colspan="2">Cập nhật gần nhất</th>
+            </tr>
         </thead>
         <tbody>
 
-        {{#each courses}}
+            {{#each courses}}
             <tr>
                 <td>
                     <div class="form-check">
@@ -46,25 +46,29 @@
                 <th scope="row">
                     {{sum @index 1}}
                 </th>
-                <td>{{this.title}}</td>
+                <td>
+                    <a class="courseName" href="/{{this.slug}}">
+                        {{this.title}}
+                    </a>
+                </td>
                 <td>{{this.description}}</td>
                 <td>{{this.updatedAt}}</td>
 
                 <td>
                     <a href="/courses/{{this._id}}/edit" class="btn btn-primary">Sửa</a>
                     <button class="btn btn-danger" data-id="{{this._id}}" data-bs-toggle="modal"
-                            data-bs-target="#delete-course-modal">Xóa
+                        data-bs-target="#delete-course-modal">Xóa
                     </button>
                 </td>
             </tr>
-        {{else}}
+            {{else}}
             <tr>
                 <td colspan="5" class="text-center">Bạn chưa đăng khóa học nào.
                     <a href="/courses/create">Đăng khóa học</a>
                 </td>
             </tr>
 
-        {{/each}}
+            {{/each}}
         </tbody>
     </table>
 </form>

@@ -1,15 +1,18 @@
-const {mongooseToObject, multipleMongooseObject} = require("../../util/mongoose");
+const { mongooseToObject, multipleMongooseObject } = require("../../util/mongoose");
 const Course = require("../models/Course");
-const {getYouTubeVideoId} = require("../../util/videoId");
+const { getYouTubeVideoId } = require("../../util/videoId");
 
 class CourseController {
 
     // [GET] /courses/:slug
     async show(req, res) {
         try {
-            const {slug} = req.params
-            const course = await Course.findOne({slug})
-            res.render('courses/show', {course: mongooseToObject(course)})
+            const { slug } = req.params
+            const course = await Course.findOne({ slug })
+            res.render('courses/show', {
+                course: mongooseToObject(course),
+                layout: 'minimal' // Use minimal layout
+            })
         } catch (error) {
             console.log(error);
         }
@@ -39,7 +42,7 @@ class CourseController {
     // [GET] /courses/stored-courses
     async storedCourse(req, res) {
         try {
-            const deletedCourses = await Course.countDocumentsWithDeleted({deleted: true});
+            const deletedCourses = await Course.countDocumentsWithDeleted({ deleted: true });
             const courses = await Course.find()
 
             const convertCourses = multipleMongooseObject(courses).map(course => ({
@@ -83,7 +86,7 @@ class CourseController {
                 description: editedCourse.description,
                 ytbVideoId: getYouTubeVideoId(editedCourse.ytbVideoLink)
             }
-            await Course.updateOne({_id: req.params.id}, formData)
+            await Course.updateOne({ _id: req.params.id }, formData)
             res.redirect('/courses/stored-courses')
         } catch (e) {
             console.log(e)
@@ -93,7 +96,7 @@ class CourseController {
     // [DELETE] /courses/:id
     async delete(req, res) {
         try {
-            await Course.delete({_id: req.params.id})
+            await Course.delete({ _id: req.params.id })
             res.redirect('back')
         } catch (e) {
             console.log(e)
@@ -103,7 +106,7 @@ class CourseController {
     // [DELETE] /courses/:id/force
     async forceDelete(req, res) {
         try {
-            await Course.deleteOne({_id: req.params.id})
+            await Course.deleteOne({ _id: req.params.id })
             res.redirect('back')
         } catch (e) {
             console.log(e)
@@ -113,7 +116,7 @@ class CourseController {
     // [GET] /courses/trash
     async trashCourse(req, res) {
         try {
-            const deletedCourses = await Course.findWithDeleted({deleted: true});
+            const deletedCourses = await Course.findWithDeleted({ deleted: true });
 
             const convertCourses = multipleMongooseObject(deletedCourses).map(course => ({
                 ...course,
@@ -131,7 +134,7 @@ class CourseController {
     // [PATCH] /courses/:id/restore
     async restore(req, res) {
         try {
-            await Course.restore({_id: req.params.id})
+            await Course.restore({ _id: req.params.id })
             res.redirect('back')
         } catch (e) {
             console.log(e)
@@ -143,14 +146,35 @@ class CourseController {
         try {
             switch (req.body.action) {
                 case 'delete':
-                    await Course.delete({_id:req.body.courseIds})
+                    await Course.delete({ _id: req.body.courseIds })
                     res.redirect('back')
                     break
                 default:
-                    res.json({message: 'Action is invalid!'})
+                    res.json({ message: 'Action is invalid!' })
             }
         } catch (e) {
             console.log(e)
+        }
+    }
+
+    async handleTrashFormActions(req, res) {
+        try {
+            switch (req.body.action) {
+                case 'restore':
+                    await Course.restore({ _id: req.body.courseIds })
+                    break;
+
+                case 'delete':
+                    await Course.deleteMany({ _id: { $in: req.body.courseIds } })
+                    break
+
+                default:
+                    break;
+            }
+
+            res.redirect('back')
+        } catch (error) {
+            console.log(error);
         }
     }
 
