@@ -12,16 +12,23 @@
             <div class="accordion-body">
                 <ul class="list-group" id="lessonList-{{@index}}">
                     {{#each this.lessons}}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <div>
-                            <i class="bi bi-play-circle me-2"></i>
-                            {{this.title}}
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="lesson-title cursor-pointer" data-bs-toggle="modal"
+                                data-bs-target="#lessonDetailModal" data-lesson-id="{{this._id}}"
+                                data-lesson-title="{{this.title}}"
+                                data-lesson-type="{{#if this.ytbVideoID}}video{{else if this.docLink}}document{{else}}exercise{{/if}}"
+                                data-lesson-video="{{this.ytbVideoID}}" data-lesson-doc="{{this.docLink}}"
+                                data-lesson-content="{{this.content}}">
+                                <i class="bi bi-play-circle me-2"></i>
+                                {{this.title}}
+                            </div>
+                            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                                data-bs-target="#deleteModal" data-lesson-id="{{this._id}}"
+                                data-lesson-title="{{this.title}}">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </div>
-                        <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
-                            data-bs-target="#deleteModal" data-lesson-id="{{this._id}}"
-                            data-lesson-title="{{this.title}}">
-                            <i class="bi bi-trash"></i>
-                        </button>
                     </li>
                     {{/each}}
                 </ul>
@@ -107,6 +114,49 @@
     </div>
 </div>
 
+<!-- Lesson Detail Modal -->
+<div class="modal fade" id="lessonDetailModal" tabindex="-1" aria-labelledby="lessonDetailModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="lessonDetailTitle">Chi tiết bài học</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Video content -->
+                <div id="videoContent" class="lesson-content">
+                    <div class="ratio ratio-16x9 mb-3">
+                        <iframe id="videoFrame" src="" title="YouTube video player" allowfullscreen></iframe>
+                    </div>
+                </div>
+
+                <!-- Document content -->
+                <div id="documentContent" class="lesson-content d-none">
+                    <div class="alert alert-info">
+                        <i class="bi bi-file-earmark-text me-2"></i>
+                        Tài liệu: <a id="docLink" href="" target="_blank" class="alert-link">Mở tài liệu</a>
+                    </div>
+                </div>
+
+                <!-- Exercise content -->
+                <div id="exerciseContent" class="lesson-content d-none">
+                    <div class="card">
+                        <div class="card-header">Nội dung bài tập</div>
+                        <div class="card-body">
+                            <p id="exerciseText"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <a id="editLessonBtn" href="#" class="btn btn-primary">Sửa bài học</a>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -172,5 +222,64 @@
             deleteForm.action = `/courses/{{course._id}}/lessons/${lessonIdToDelete}?_method=DELETE`;
             deleteForm.submit();
         });
+
+        // Lesson detail modal handling
+        const lessonDetailModal = document.getElementById('lessonDetailModal');
+        const lessonDetailTitle = document.getElementById('lessonDetailTitle');
+        const videoContent = document.getElementById('videoContent');
+        const documentContent = document.getElementById('documentContent');
+        const exerciseContent = document.getElementById('exerciseContent');
+        const videoFrame = document.getElementById('videoFrame');
+        const docLink = document.getElementById('docLink');
+        const exerciseText = document.getElementById('exerciseText');
+        const editLessonBtn = document.getElementById('editLessonBtn');
+
+        lessonDetailModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const lessonId = button.getAttribute('data-lesson-id');
+            const lessonTitle = button.getAttribute('data-lesson-title');
+            const lessonType = button.getAttribute('data-lesson-type');
+            const videoId = button.getAttribute('data-lesson-video');
+            const docLinkUrl = button.getAttribute('data-lesson-doc');
+            const content = button.getAttribute('data-lesson-content');
+
+            // Set the title
+            lessonDetailTitle.textContent = lessonTitle;
+
+            // Hide all content sections initially
+            videoContent.classList.add('d-none');
+            documentContent.classList.add('d-none');
+            exerciseContent.classList.add('d-none');
+
+            // Show appropriate content based on lesson type
+            if (lessonType === 'video' && videoId) {
+                videoContent.classList.remove('d-none');
+                videoFrame.src = `https://www.youtube.com/embed/${videoId}`;
+            } else if (lessonType === 'document' && docLinkUrl) {
+                documentContent.classList.remove('d-none');
+                docLink.href = docLinkUrl;
+            } else if (lessonType === 'exercise' && content) {
+                exerciseContent.classList.remove('d-none');
+                exerciseText.textContent = content;
+            }
+
+            // Set edit button URL
+            editLessonBtn.href = `/courses/{{course._id}}/lessons/${lessonId}/edit`;
+        });
+
+        // Clean up when modal is hidden
+        lessonDetailModal.addEventListener('hidden.bs.modal', function () {
+            videoFrame.src = '';
+        });
     });
 </script>
+
+<style>
+    .cursor-pointer {
+        cursor: pointer;
+    }
+
+    .lesson-title:hover {
+        color: #0d6efd;
+    }
+</style>

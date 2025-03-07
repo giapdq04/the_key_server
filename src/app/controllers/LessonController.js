@@ -2,6 +2,7 @@ const Section = require('../models/Section');
 const { mongooseToObject, multipleMongooseObject } = require('../../util/mongoose');
 const Course = require('../models/Course');
 const Lesson = require('../models/Lesson');
+const { getYouTubeVideoId } = require('../../util/videoId');
 
 class LessonController {
     // [GET] /courses/:courseId/sections/:sectionId/lessons/create
@@ -36,6 +37,7 @@ class LessonController {
         try {
             const lesson = new Lesson({
                 ...req.body,
+                ytbVideoID: getYouTubeVideoId(req.body.ytbVideoLink),
                 courseID: req.params.courseId,
                 sectionID: req.params.sectionId
             });

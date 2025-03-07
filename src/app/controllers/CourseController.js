@@ -1,6 +1,8 @@
 const { mongooseToObject, multipleMongooseObject } = require("../../util/mongoose");
 const Course = require("../models/Course");
 const { getYouTubeVideoId } = require("../../util/videoId");
+const Section = require("../models/Section");
+const Lesson = require("../models/Lesson");
 
 class CourseController {
 
@@ -96,10 +98,24 @@ class CourseController {
     // [DELETE] /courses/:id
     async delete(req, res) {
         try {
-            await Course.delete({ _id: req.params.id })
-            res.redirect('back')
+            const courseId = req.params.id;
+
+            // Soft delete the course
+            await Course.delete({ _id: courseId });
+
+            // Soft delete all sections of this course
+            await Section.delete({ courseID: courseId });
+
+            // Soft delete all lessons of this course
+            await Lesson.delete({ courseID: courseId });
+
+            res.redirect('back');
         } catch (e) {
-            console.log(e)
+            console.log(e);
+            res.status(500).json({
+                success: false,
+                message: 'Internal server error'
+            });
         }
     }
 
