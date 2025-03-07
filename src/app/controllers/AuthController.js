@@ -17,7 +17,10 @@ class AuthController {
 
             if (user) {
                 req.session.user = user;
-                res.redirect('/');
+                // Chuyển hướng người dùng đến trang mà họ đã cố truy cập trước đó
+                const redirectUrl = req.session.returnTo || '/';
+                delete req.session.returnTo; // Xóa đường dẫn đã lưu
+                res.redirect(redirectUrl);
             } else {
                 res.render('login', {
                     layout: false,
@@ -33,7 +36,17 @@ class AuthController {
         }
     }
 
-    async registerPost(req, res) {
+    // [GET] /logout
+    logout(req, res) {
+        req.session.destroy(err => {
+            if (err) {
+                console.error('Lỗi khi đăng xuất:', err);
+            }
+            res.redirect('/auth/login');
+        });
+    }
+
+    async register(req, res) {
         try {
             const formData = req.body
             const result = await Admin.findOne({ admin_name: formData.admin_name })
