@@ -2,14 +2,14 @@
     <div class="row">
         <div class="col-md-8 mx-auto">
             <h3 class="mb-4">Thêm bài học mới</h3>
-            <form method="POST" action="/courses/{{course._id}}/sections/{{section._id}}/lessons">
+            <form autocomplete="off" method="POST" action="/courses/{{course._id}}/sections/{{section._id}}/lessons">
                 <!-- Lesson type selection -->
                 <div class="mb-3">
                     <label class="form-label">Loại bài học</label>
                     <div class="d-flex gap-4">
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" value="video" id="videoCheck"
-                                name="lessonType" checked>
+                            <input class="form-check-input" type="radio" value="video" id="videoCheck" name="lessonType"
+                                checked>
                             <label class="form-check-label" for="videoCheck">
                                 <i class="bi bi-play-circle me-1"></i>Video
                             </label>
@@ -40,7 +40,7 @@
                 <!-- Dynamic fields based on selection -->
                 <div id="videoField" class="mb-3">
                     <label for="lessonVideo" class="form-label">Link Video</label>
-                    <input type="text" class="form-control" id="lessonVideo" name="videoUrl">
+                    <input type="text" class="form-control" id="lessonVideo" name="ytbVideoID">
                 </div>
 
                 <div id="documentField" class="mb-3 d-none">

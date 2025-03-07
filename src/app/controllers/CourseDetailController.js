@@ -14,7 +14,7 @@ class CourseDetailController {
             if (!course) {
                 return res.status(404).json({
                     success: false,
-                    message: 'Không tìm thấy khóa học'
+                    message: 'Không tìm thấy khóa học 11'
                 });
             }
 
@@ -42,7 +42,7 @@ class CourseDetailController {
             if (!course) {
                 return res.status(404).json({
                     success: false,
-                    message: 'Không tìm thấy khóa học'
+                    message: 'Không tìm thấy khóa học 2'
                 });
             }
 

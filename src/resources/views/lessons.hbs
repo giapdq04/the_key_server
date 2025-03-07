@@ -12,7 +12,17 @@
             <div class="accordion-body">
                 <ul class="list-group" id="lessonList-{{@index}}">
                     {{#each this.lessons}}
-                    <li class="list-group-item">{{this.title}}</li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="bi bi-play-circle me-2"></i>
+                            {{this.title}}
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                            data-bs-target="#deleteModal" data-lesson-id="{{this._id}}"
+                            data-lesson-title="{{this.title}}">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </li>
                     {{/each}}
                 </ul>
                 <!-- Form thêm bài học -->
@@ -97,6 +107,28 @@
     </div>
 </div>
 
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc muốn xóa bài học "<span id="lessonTitleToDelete"></span>"?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Xóa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden delete form -->
+<form id="deleteForm" method="POST" style="display: none;"></form>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Get all radio buttons and fields
@@ -121,5 +153,24 @@
 
         // Show video field by default
         toggleFields('video');
+
+        // Add this to your existing script
+        const deleteModal = document.getElementById('deleteModal');
+        const deleteForm = document.getElementById('deleteForm');
+        const confirmDelete = document.getElementById('confirmDelete');
+        const lessonTitleToDelete = document.getElementById('lessonTitleToDelete');
+        let lessonIdToDelete;
+
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            lessonIdToDelete = button.getAttribute('data-lesson-id');
+            const lessonTitle = button.getAttribute('data-lesson-title');
+            lessonTitleToDelete.textContent = lessonTitle;
+        });
+
+        confirmDelete.addEventListener('click', function () {
+            deleteForm.action = `/courses/{{course._id}}/lessons/${lessonIdToDelete}?_method=DELETE`;
+            deleteForm.submit();
+        });
     });
 </script>

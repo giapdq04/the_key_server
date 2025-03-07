@@ -40,7 +40,31 @@ class LessonController {
                 sectionID: req.params.sectionId
             });
             await lesson.save();
-            res.redirect(`/${req.params.slug}/lessons`);
+            const course = await Course.findById(req.params.courseId);
+            res.redirect(`/${course.slug}/lessons`);
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                success: false,
+                message: 'Internal server error'
+            });
+        }
+    }
+
+    // [DELETE] /courses/:courseId/lessons/:id
+    async delete(req, res) {
+        try {
+            const lesson = await Lesson.findById(req.params.id);
+            if (!lesson) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Không tìm thấy bài học'
+                });
+            }
+
+            const course = await Course.findById(req.params.courseId);
+            await Lesson.delete({ _id: req.params.id });
+            res.redirect(`/${course.slug}/lessons`);
         } catch (error) {
             console.log(error);
             res.status(500).json({
