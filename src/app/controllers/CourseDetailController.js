@@ -12,10 +12,7 @@ class CourseDetailController {
             const course = await Course.findOne({ slug });
 
             if (!course) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Không tìm thấy khóa học 11'
-                });
+                return res.redirect('/')
             }
 
             const sections = await Section.find({ courseID: course._id });

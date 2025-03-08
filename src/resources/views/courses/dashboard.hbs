@@ -22,11 +22,19 @@
                 <div class="section-item">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">{{this.title}}</h5>
-                        <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
-                            data-bs-target="#deleteModal" data-section-id="{{this._id}}"
-                            data-section-title="{{this.title}}">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                        <span>
+                            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                                data-bs-target="#deleteModal" data-section-id="{{this._id}}"
+                                data-section-title="{{this.title}}">
+                                <i class="bi bi-trash"></i>
+                            </button>
+
+                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                                data-bs-target="#editSectionModal" data-section-id="{{this._id}}"
+                                data-section-title="{{this.title}}">
+                                <i class="bi bi-pen"></i>
+                            </button>
+                        </span>
                     </div>
                     <div class="lessons-list mt-3">
                         {{#each this.lessons}}
@@ -96,29 +104,24 @@
     </div>
 </div>
 
-<!-- Add Lesson Modal -->
-<div class="modal fade" id="addLessonModal" tabindex="-1">
+{{!-- Update section modal --}}
+<div class="modal fade" id="editSectionModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Thêm bài học mới</h5>
+                <h5 class="modal-title">Sửa chương</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form id="addLessonForm" action="/courses/{{course._id}}/lessons" method="POST">
-                <input type="hidden" name="sectionId" id="sectionId">
+            <form id="editSectionForm" method="POST">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="sectionTitle" class="form-label">Tên bài học</label>
-                        <input type="text" class="form-control" id="sectionTitle" name="title" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="videoUrl" class="form-label">Link video Youtube</label>
-                        <input type="url" class="form-control" id="videoUrl" name="videoUrl" required>
+                        <label for="editSectionTitle" class="form-label">Tên chương</label>
+                        <input type="text" class="form-control" id="editSectionTitle" name="title" required>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-primary">Thêm bài học</button>
+                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
                 </div>
             </form>
         </div>
@@ -149,7 +152,22 @@
         })
         //-----------------------
 
+        const editSectionModal = document.getElementById('editSectionModal');
+        const editSectionForm = document.getElementById('editSectionForm');
+        const editSectionTitleInput = document.getElementById('editSectionTitle');
+        let sectionIdToEdit;
 
+        editSectionModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            sectionIdToEdit = button.getAttribute('data-section-id');
+            const sectionTitle = button.getAttribute('data-section-title');
+            editSectionTitleInput.value = sectionTitle;
+        });
 
+        editSectionForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            editSectionForm.action = `/sections/${sectionIdToEdit}?_method=PUT`;
+            editSectionForm.submit();
+        });
     })
 </script>
