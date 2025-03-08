@@ -4,7 +4,7 @@ const sectionController = require('../app/controllers/SectionController');
 
 router.get('/courses/:courseId/sections', sectionController.index);
 router.post('/courses/:courseId/sections', sectionController.store);
-router.put('/courses/:courseId/sections/:id', sectionController.update);
-router.delete('/courses/:courseId/sections/:id', sectionController.delete);
+router.put('/sections/:id', sectionController.update);
+router.delete('/sections/:id', sectionController.delete);
 
 module.exports = router;

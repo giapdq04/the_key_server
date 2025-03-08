@@ -22,12 +22,17 @@
                 <div class="section-item">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">{{this.title}}</h5>
+                        <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                            data-bs-target="#deleteModal" data-section-id="{{this._id}}"
+                            data-section-title="{{this.title}}">
+                            <i class="bi bi-trash"></i>
+                        </button>
                     </div>
                     <div class="lessons-list mt-3">
                         {{#each this.lessons}}
                         <div class="lesson-item d-flex justify-content-between align-items-center p-2">
-                            <span>{{this.title}}</span>
-                            <button class="btn btn-sm btn-outline-danger">
+                            <span data-section-title="{{this.title}}">{{this.title}}</span>
+                            <button class="btn btn-sm btn-outline-danger" data-section-title="{{this.title}}">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </div>
@@ -44,6 +49,28 @@
         </div>
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc muốn xóa bài học "<span id="sectionTitleToDelete"></span>"?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Xóa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden delete form -->
+<form id="deleteForm" method="POST" style="display: none;"></form>
 
 <!-- Add Section Modal -->
 <div class="modal fade" id="addSectionModal" tabindex="-1">
@@ -81,8 +108,8 @@
                 <input type="hidden" name="sectionId" id="sectionId">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="lessonTitle" class="form-label">Tên bài học</label>
-                        <input type="text" class="form-control" id="lessonTitle" name="title" required>
+                        <label for="sectionTitle" class="form-label">Tên bài học</label>
+                        <input type="text" class="form-control" id="sectionTitle" name="title" required>
                     </div>
                     <div class="mb-3">
                         <label for="videoUrl" class="form-label">Link video Youtube</label>
@@ -97,3 +124,32 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // chức năng xóa chương
+        const sectionTitleToDelete = document.getElementById('sectionTitleToDelete');
+        const deleteModal = document.getElementById('deleteModal');
+        const confirmDelete = document.getElementById('confirmDelete');
+        const deleteForm = document.getElementById('deleteForm');
+        let sectionIdToDelete;
+
+
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            sectionIdToDelete = button.getAttribute('data-section-id');
+            const sectionTitle = button.getAttribute('data-section-title');
+            sectionTitleToDelete.textContent = sectionTitle;
+        });
+
+        confirmDelete.addEventListener('click', function () {
+            deleteForm.action = `/sections/${sectionIdToDelete}?_method=DELETE`
+            deleteForm.submit();
+        })
+        //-----------------------
+
+
+
+    })
+</script>

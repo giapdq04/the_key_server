@@ -61,7 +61,19 @@ app.engine('hbs', engine({
         concat: function (...args) {
             args.pop(); // Remove handlebars options object
             return args.join('');
-        }
+        },
+        eq: function (a, b) {
+            return a === b;
+        },
+        formatDate: function (date) {
+            return new Date(date).toLocaleDateString('vi-VN', {
+                day: '2-digit', month: '2-digit', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+        },
+        ne: function (a, b) {
+            return a !== b;
+        },
     }
 }));
 app.set('view engine', 'hbs');

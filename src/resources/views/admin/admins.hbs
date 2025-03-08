@@ -1,0 +1,56 @@
+<div class="mt-4">
+    <h3>Danh sách quản trị viên</h3>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addAdminModal">
+        <i class="bi bi-plus-circle"></i> Thêm quản trị viên
+    </button>
+
+    <div class="mt-4">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Tên đăng nhập</th>
+                    <th scope="col">Quyền hạn</th>
+                    <th scope="col">Ngày tạo</th>
+                    <th scope="col">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each admins}}
+                <tr>
+                    <th scope="row">{{sum @index 1}}</th>
+                    <td>{{this.admin_name}}</td>
+                    <td>
+                        {{#if (eq this.power 0)}}
+                        <span class="badge bg-danger">Quản trị viên cấp cao</span>
+                        {{else if (eq this.power 1)}}
+                        <span class="badge bg-primary">Quản trị viên</span>
+                        {{else}}
+                        <span class="badge bg-warning">Quản trị viên cấp thấp {{this.power}}</span>
+                        {{/if}}
+                    </td>
+                    <td>{{formatDate this.createdAt}}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                            data-bs-target="#editAdminModal" data-id="{{this._id}}" data-name="{{this.admin_name}}"
+                            data-power="{{this.power}}">
+                            <i class="bi bi-pencil"></i> Sửa
+                        </button>
+
+                        {{#if (ne this._id ../currentUser._id)}}
+                        <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                            data-bs-target="#deleteAdminModal" data-id="{{this._id}}" data-name="{{this.admin_name}}">
+                            <i class="bi bi-trash"></i> Xóa
+                        </button>
+                        {{/if}}
+                    </td>
+                </tr>
+                {{else}}
+                <tr>
+                    <td colspan="5" class="text-center">Không có quản trị viên nào.</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+</div>

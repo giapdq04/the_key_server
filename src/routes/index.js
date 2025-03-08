@@ -4,11 +4,13 @@ const authRouter = require('./auth')
 const sectionRouter = require('./section')
 const courseDetail = require('./courseDetail')
 const lessonRouter = require('./lesson')
+const adminRouter = require('./admin')
 const { requireLogin } = require('../middlewares/auth.middleware')
 
 const route = (app) => {
     app.use('/auth', authRouter)
     app.use('/courses', requireLogin, courseRouter)
+    app.use('/admins', adminRouter)
     app.use('/', requireLogin, lessonRouter)
     app.use('/', requireLogin, sectionRouter)
     app.use('/', requireLogin, courseDetail)

@@ -1,3 +1,4 @@
+const { multipleMongooseObject } = require("../../util/mongoose");
 const Admin = require("../models/Admin");
 
 class AuthController {
@@ -66,6 +67,21 @@ class AuthController {
                 success: true,
                 message: 'Tạo tài khoản thành công'
             })
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                success: false,
+                message: 'Internal server error'
+            })
+        }
+    }
+
+    async showAllAdmins(req, res) {
+        try {
+            const admins = await Admin.find({})
+            console.log('admins: ', admins);
+
+            res.render('admin/admins', { admins: multipleMongooseObject(admins) })
         } catch (error) {
             console.log(error);
             res.status(500).json({
