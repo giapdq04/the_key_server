@@ -6,6 +6,7 @@ const session = require('express-session')
 const { engine } = require('express-handlebars');
 const path = require("path");
 const methodOverride = require('method-override')
+const helmet = require('helmet')
 const hbsHelpers = require('./helpers/handlebars');
 const app = express()
 const port = 3000
@@ -16,24 +17,44 @@ const db = require('./config/db')
 // Connect to DB
 db.connect()
 
-// Add session middleware before routes
+// Thêm middleware bảo mật helmet
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://ajax.googleapis.com"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+            imgSrc: ["'self'", "data:", "https://img.youtube.com", "https://github.com", "https://avatars.githubusercontent.com"],
+            connectSrc: ["'self'"]
+        }
+    },
+    xssFilter: true,
+    noSniff: true
+}));
+
+// thêm session middleware
 app.use(session({
     secret: process.env.SESSION_SECRET || 'your_secret_key',
     resave: false,
     saveUninitialized: false,
     cookie: {
         secure: process.env.NODE_ENV === 'production',
-        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        httpOnly: true,
+        sameSite: 'lax'
     }
 }))
 
+// Static file
 app.use(express.static(path.join(__dirname, 'public')))
 
+//body parser
 app.use(express.urlencoded({
     extended: true
 }))
 app.use(express.json())
 
+// Method override
 app.use(methodOverride('_method'))
 
 // Add request to response locals
@@ -50,8 +71,6 @@ app.use((req, res, next) => {
 
 // HTTP logger
 app.use(morgan('combined'))
-
-
 
 // Template engine
 app.engine('hbs', engine({

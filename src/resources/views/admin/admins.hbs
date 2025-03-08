@@ -31,13 +31,13 @@
                     </td>
                     <td>{{formatDate this.createdAt}}</td>
                     <td>
-                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                        {{!-- <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
                             data-bs-target="#editAdminModal" data-id="{{this._id}}" data-name="{{this.admin_name}}"
                             data-power="{{this.power}}">
                             <i class="bi bi-pencil"></i> Sửa
-                        </button>
+                        </button> --}}
 
-                        {{#if (ne (toString this._id) ../currentUser._id)}}
+                        {{#if (gt this.power ../currentUser.power)}}
                         <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
                             data-bs-target="#deleteAdminModal" data-id="{{this._id}}" data-name="{{this.admin_name}}">
                             <i class="bi bi-trash"></i> Xóa
