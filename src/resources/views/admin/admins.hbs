@@ -37,7 +37,7 @@
                             <i class="bi bi-pencil"></i> Sửa
                         </button>
 
-                        {{#if (ne this._id ../currentUser._id)}}
+                        {{#if (ne (toString this._id) ../currentUser._id)}}
                         <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
                             data-bs-target="#deleteAdminModal" data-id="{{this._id}}" data-name="{{this.admin_name}}">
                             <i class="bi bi-trash"></i> Xóa

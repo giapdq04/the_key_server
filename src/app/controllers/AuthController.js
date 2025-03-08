@@ -1,4 +1,4 @@
-const { multipleMongooseObject } = require("../../util/mongoose");
+const { multipleMongooseObject, mongooseToObject } = require("../../util/mongoose");
 const Admin = require("../models/Admin");
 
 class AuthController {
@@ -79,9 +79,13 @@ class AuthController {
     async showAllAdmins(req, res) {
         try {
             const admins = await Admin.find({})
-            console.log('admins: ', admins);
 
-            res.render('admin/admins', { admins: multipleMongooseObject(admins) })
+            const currentUser = req.session.user
+
+            res.render('admin/admins', {
+                admins: multipleMongooseObject(admins),
+                currentUser: currentUser
+            })
         } catch (error) {
             console.log(error);
             res.status(500).json({
