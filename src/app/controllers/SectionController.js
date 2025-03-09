@@ -20,7 +20,7 @@ class SectionController {
                 courseID: req.params.courseId,
             });
             await section.save();
-            res.redirect('back');
+            res.redirect(`/${result.slug}`);
         } catch (error) {
             console.error(error);
             res.status(500).json({
@@ -33,8 +33,19 @@ class SectionController {
     // [PUT] /courses/:courseId/sections/:id
     async update(req, res) {
         try {
+            const { id } = req.params;
+
+            const section = await Section.findById(id);
+
+            if (!section) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Không tìm thấy section'
+                });
+            }
+
             await Section.updateOne(
-                { _id: req.params.id },
+                { _id: id },
                 { title: req.body.title }
             );
             res.redirect('back');
@@ -50,6 +61,16 @@ class SectionController {
     // [DELETE] /courses/:courseId/sections/:id
     async delete(req, res) {
         try {
+            const { id } = req.params;
+            const section = await Section.findById(id);
+
+            if (!section) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Không tìm thấy section'
+                });
+            }
+
             await Section.delete({ _id: req.params.id });
             res.redirect('back');
         } catch (error) {

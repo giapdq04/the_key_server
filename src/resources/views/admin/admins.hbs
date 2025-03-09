@@ -1,8 +1,8 @@
 <div class="mt-4">
     <h3>Danh sách quản trị viên</h3>
-    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addAdminModal">
+    <a class="btn btn-success" href="/admins/create">
         <i class="bi bi-plus-circle"></i> Thêm quản trị viên
-    </button>
+    </a>
 
     <div class="mt-4">
         <table class="table">
@@ -102,6 +102,8 @@
             deleteForm.action = `/admins/${adminIdToDelete}?_method=DELETE`
             deleteForm.submit();
         })
+
+        // chức năng thay đổi quyền hạn
 
     })
 </script>

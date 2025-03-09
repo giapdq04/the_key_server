@@ -6,17 +6,17 @@
     <form autocomplete="off" method="post" action="/courses/store">
         <div class="mb-3">
             <label for="title" class="form-label">Tên khóa học</label>
-            <input type="text" class="form-control" id="title" name="title">
+            <input type="text" class="form-control" id="title" name="title" required>
         </div>
 
         <div class="mb-3">
             <label for="ytbVideoLink" class="form-label">Link video giới thiệu</label>
-            <input type="text" class="form-control" id="ytbVideoLink" name="ytbVideoLink">
+            <input type="text" class="form-control" id="ytbVideoLink" name="ytbVideoLink" required>
         </div>
 
         <div class="mb-3">
             <label for="description" class="form-label">Mô tả</label>
-            <textarea class="form-control" id="description" name="description"></textarea>
+            <textarea class="form-control" id="description" name="description" required></textarea>
         </div>
 
         {{#if error}}

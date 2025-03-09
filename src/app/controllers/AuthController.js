@@ -12,8 +12,8 @@ class AuthController {
         try {
             const formData = req.body;
             const user = await Admin.findOne({
-                admin_name: formData.admin_name,
-                password: formData.password
+                admin_name: formData.admin_name.trim(),
+                password: formData.password.trim()
             });
 
             if (user) {
@@ -98,6 +98,11 @@ class AuthController {
         }
     }
 
+    // [GET] /admins/create
+    createAdminForm(req, res) {
+        res.render('admin/createAdmin')
+    }
+
     // [Add] /admins
     async createAdmin(req, res) {
         try {
@@ -108,26 +113,32 @@ class AuthController {
 
             if (result) {
                 // Trả về lỗi nếu admin_name đã tồn tại
-                return res.status(409).json({
-                    success: false,
-                    message: 'Tên này đã tồn tại'
+                return res.render('admin/createAdmin', {
+                    error: 'Tên này đã tồn tại'
                 })
             }
 
+            // Kiểm tra quyền của admin hiện tại
             if (currentUser.power >= power) {
-                return res.status(401).json({
-                    success: false,
-                    message: 'Bạn không có quyền thêm admin này'
+                return res.render('admin/createAdmin', {
+                    error: 'Bạn không có quyền thêm admin này'
                 })
             }
 
-            const newAdmin = new Admin({ admin_name, password, power })
+            if (power < 0 || power > 10) {
+                return res.render('admin/createAdmin', {
+                    error: 'Quyền phải nằm trong khoảng từ 0 đến 10'
+                })
+            }
+
+            const newAdmin = new Admin({
+                admin_name: admin_name.trim(),
+                password: password.trim(),
+                power: power
+            })
 
             await newAdmin.save()
-            res.status(201).json({
-                success: true,
-                message: 'Tạo tài khoản thành công'
-            })
+            res.redirect('/admins')
         } catch (error) {
             console.log(error);
             res.status(500).json({
@@ -171,6 +182,54 @@ class AuthController {
         }
     }
 
+    // [PATCH] /admins
+    async updateAdmin(req, res) {
+        try {
+            const { id } = req.params
+            const updatedAdmin = await Admin.findById(id)
+
+            if (!updatedAdmin) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Admin này không tồn tại'
+                })
+            }
+
+            const { power } = req.body
+
+            const currentUser = req.session.user
+
+            if (power <= currentUser.power) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Bạn không có quyền sửa admin này'
+                })
+            }
+
+            if (power < 0 || power > 10) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Quyền phải nằm trong khoảng từ 0 đến 10'
+                })
+            }
+
+            updatedAdmin.power = power
+
+            await updatedAdmin.save()
+
+            // res.redirect('/admins')
+            res.status(200).json({
+                success: true,
+                message: 'Cập nhật admin thành công'
+            })
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                success: false,
+                message: 'Internal server error'
+            })
+        }
+    }
 }
 
 module.exports = new AuthController();
