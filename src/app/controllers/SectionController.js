@@ -1,6 +1,7 @@
 const Section = require('../models/Section');
 const { mongooseToObject, multipleMongooseObject } = require('../../util/mongoose');
 const Course = require('../models/Course');
+const Lesson = require('../models/Lesson');
 
 class SectionController {
     // [POST] /courses/:courseId/sections
@@ -16,7 +17,7 @@ class SectionController {
             }
 
             const section = new Section({
-                title: req.body.title,
+                title: req.body.title.trim(),
                 courseID: req.params.courseId,
             });
             await section.save();
@@ -30,7 +31,7 @@ class SectionController {
         }
     }
 
-    // [PUT] /courses/:courseId/sections/:id
+    // [PUT] /sections/:id
     async update(req, res) {
         try {
             const { id } = req.params;
@@ -58,7 +59,7 @@ class SectionController {
         }
     }
 
-    // [DELETE] /courses/:courseId/sections/:id
+    // [DELETE] /sections/:id
     async delete(req, res) {
         try {
             const { id } = req.params;
@@ -71,7 +72,9 @@ class SectionController {
                 });
             }
 
-            await Section.delete({ _id: req.params.id });
+            await Lesson.deleteMany({ sectionID: id });
+
+            await Section.deleteOne({ _id: req.params.id });
             res.redirect('back');
         } catch (error) {
             console.error(error);
