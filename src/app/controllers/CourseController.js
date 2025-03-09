@@ -29,9 +29,18 @@ class CourseController {
     // [POST] /courses/store
     async store(req, res) {
         try {
+            const { title, description, ytbVideoLink } = req.body
+
+            if (ytbVideoLink === '', title === '', description === '') {
+                return res.render('courses/create', {
+                    error: 'Hãy điền đầy đủ thông tin'
+                })
+            }
+
             const course = new Course({
-                ...req.body,
-                ytbVideoId: getYouTubeVideoId(req.body.ytbVideoLink)
+                title: title.trim(),
+                description: description.trim(),
+                ytbVideoId: getYouTubeVideoId(ytbVideoLink)
             })
             await course.save()
             res.redirect('/')

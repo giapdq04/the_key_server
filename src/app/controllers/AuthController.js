@@ -38,7 +38,7 @@ class AuthController {
     }
 
     // [GET] /logout
-    logout(req, res) {
+    logoutAdmin(req, res) {
         req.session.destroy(err => {
             if (err) {
                 console.error('Lỗi khi đăng xuất:', err);
@@ -76,6 +76,9 @@ class AuthController {
         }
     }
 
+    // Admin
+
+    // [GET] /admins
     async showAllAdmins(req, res) {
         try {
             const admins = await Admin.find({})
@@ -94,6 +97,80 @@ class AuthController {
             })
         }
     }
+
+    // [Add] /admins
+    async createAdmin(req, res) {
+        try {
+            const currentUser = req.session.user
+            const { admin_name, password, power } = req.body
+
+            const result = await Admin.findOne({ admin_name })
+
+            if (result) {
+                // Trả về lỗi nếu admin_name đã tồn tại
+                return res.status(409).json({
+                    success: false,
+                    message: 'Tên này đã tồn tại'
+                })
+            }
+
+            if (currentUser.power >= power) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Bạn không có quyền thêm admin này'
+                })
+            }
+
+            const newAdmin = new Admin({ admin_name, password, power })
+
+            await newAdmin.save()
+            res.status(201).json({
+                success: true,
+                message: 'Tạo tài khoản thành công'
+            })
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                success: false,
+                message: 'Internal server error'
+            })
+        }
+    }
+
+    // [DELETE] /admins
+    async deleteAdmin(req, res) {
+        try {
+            const currentUser = req.session.user
+            const { id } = req.params
+
+            const deteledAdmin = await Admin.findById(id)
+
+            if (!deteledAdmin) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Admin không tồn tại'
+                })
+            }
+
+            if (currentUser.power >= deteledAdmin.power) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Bạn không có quyền xóa admin này'
+                })
+            }
+
+            await Admin.deleteOne({ _id: id })
+            res.redirect('/admins')
+
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({
+                success: false,
+                message: 'Internal server error'
+            })
+        }
+    }
+
 }
 
 module.exports = new AuthController();

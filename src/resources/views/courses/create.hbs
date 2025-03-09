@@ -1,6 +1,8 @@
 <div class="mt-4">
     <h3>Tạo khóa học</h3>
 
+
+
     <form autocomplete="off" method="post" action="/courses/store">
         <div class="mb-3">
             <label for="title" class="form-label">Tên khóa học</label>
@@ -16,6 +18,13 @@
             <label for="description" class="form-label">Mô tả</label>
             <textarea class="form-control" id="description" name="description"></textarea>
         </div>
+
+        {{#if error}}
+        <div class="alert alert-danger" role="alert">
+            {{error}}
+        </div>
+        {{/if}}
+
         <button type="submit" class="btn btn-primary">Tạo khóa học</button>
     </form>
 </div>

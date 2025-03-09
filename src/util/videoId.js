@@ -1,6 +1,6 @@
 function getYouTubeVideoId(url) {
     const regex = /(?:youtube\.com\/.*[?&]v=|youtu\.be\/)([^&?/]+)/;
-    const match = url.match(regex);
+    const match = url.trim().match(regex);
     return match ? match[1] : null;
 }
 

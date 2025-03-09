@@ -32,16 +32,19 @@
                     <td>{{formatDate this.createdAt}}</td>
                     <td>
                         {{!-- <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
-                            data-bs-target="#editAdminModal" data-id="{{this._id}}" data-name="{{this.admin_name}}"
-                            data-power="{{this.power}}">
+                            data-bs-target="#editAdminModal" data-admin-id="{{this._id}}"
+                            data-admin-name="{{this.admin_name}}" data-power="{{this.power}}">
                             <i class="bi bi-pencil"></i> Sửa
                         </button> --}}
 
                         {{#if (gt this.power ../currentUser.power)}}
                         <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
-                            data-bs-target="#deleteAdminModal" data-id="{{this._id}}" data-name="{{this.admin_name}}">
+                            data-bs-target="#deleteModal" data-admin-id="{{this._id}}"
+                            data-admin-name="{{this.admin_name}}">
                             <i class="bi bi-trash"></i> Xóa
                         </button>
+                        {{else}}
+                        <span>Không có quyền thực thi</span>
                         {{/if}}
                     </td>
                 </tr>
@@ -54,3 +57,51 @@
         </table>
     </div>
 </div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc muốn xóa admin "<span id="adminNameToDelete"></span>"?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Xóa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden delete form -->
+<form id="deleteForm" method="POST" style="display: none;"></form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // chức năng xóa admin
+        const adminNameToDelete = document.getElementById('adminNameToDelete');
+        const deleteModal = document.getElementById('deleteModal');
+        const confirmDelete = document.getElementById('confirmDelete');
+        const deleteForm = document.getElementById('deleteForm');
+        let adminIdToDelete;
+
+
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            adminIdToDelete = button.getAttribute('data-admin-id');
+            const adminName = button.getAttribute('data-admin-name');
+            adminNameToDelete.textContent = adminName;
+        });
+
+        confirmDelete.addEventListener('click', function () {
+            deleteForm.action = `/admins/${adminIdToDelete}?_method=DELETE`
+            deleteForm.submit();
+        })
+
+    })
+</script>
