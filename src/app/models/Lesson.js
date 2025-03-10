@@ -6,6 +6,7 @@ const Lesson = new Schema({
     title: { type: String, required: true },
     ytbVideoID: { type: String },
     docLink: { type: String },
+    questions: { type: String },
     courseID: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Course',

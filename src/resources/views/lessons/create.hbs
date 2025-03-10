@@ -49,8 +49,57 @@
                 </div>
 
                 <div id="exerciseField" class="mb-3 d-none">
-                    <label for="lessonExercise" class="form-label">Nội dung bài tập</label>
-                    <textarea class="form-control" id="lessonExercise" name="content" rows="5"></textarea>
+                    <label class="form-label">Câu hỏi trắc nghiệm</label>
+                    <div id="questions-container">
+                        <!-- Mẫu câu hỏi đầu tiên -->
+                        <div class="question-item border rounded p-3 mb-3">
+                            <div class="mb-2">
+                                <label class="form-label">Câu hỏi</label>
+                                <input type="text" class="form-control" name="questions[]" placeholder="Nhập câu hỏi">
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Các đáp án</label>
+                                <div class="option-container">
+                                    <div class="d-flex mb-2 align-items-center">
+                                        <div class="form-check me-2">
+                                            <input class="form-check-input" type="radio" name="correct_answer_0"
+                                                value="0" checked>
+                                        </div>
+                                        <input type="text" class="form-control" name="options_0[]"
+                                            placeholder="Đáp án 1">
+                                    </div>
+                                    <div class="d-flex mb-2 align-items-center">
+                                        <div class="form-check me-2">
+                                            <input class="form-check-input" type="radio" name="correct_answer_0"
+                                                value="1">
+                                        </div>
+                                        <input type="text" class="form-control" name="options_0[]"
+                                            placeholder="Đáp án 2">
+                                    </div>
+                                    <div class="d-flex mb-2 align-items-center">
+                                        <div class="form-check me-2">
+                                            <input class="form-check-input" type="radio" name="correct_answer_0"
+                                                value="2">
+                                        </div>
+                                        <input type="text" class="form-control" name="options_0[]"
+                                            placeholder="Đáp án 3">
+                                    </div>
+                                    <div class="d-flex mb-2 align-items-center">
+                                        <div class="form-check me-2">
+                                            <input class="form-check-input" type="radio" name="correct_answer_0"
+                                                value="3">
+                                        </div>
+                                        <input type="text" class="form-control" name="options_0[]"
+                                            placeholder="Đáp án 4">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-outline-primary mt-2" id="add-question-btn">
+                        <i class="bi bi-plus-circle"></i> Thêm câu hỏi
+                    </button>
                 </div>
 
                 <div class="mt-4">
@@ -82,5 +131,104 @@
         });
 
         toggleFields('video');
+
+        // Xử lý thêm câu hỏi mới
+        const addQuestionBtn = document.getElementById('add-question-btn');
+        const questionsContainer = document.getElementById('questions-container');
+        let questionCount = 1;
+
+        addQuestionBtn.addEventListener('click', function () {
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question-item border rounded p-3 mb-3';
+
+            const questionIndex = questionCount;
+
+            questionDiv.innerHTML = `
+                <div class="d-flex justify-content-between mb-2">
+                    <label class="form-label">Câu hỏi</label>
+                    <button type="button" class="btn btn-sm btn-outline-danger delete-question">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+                <div class="mb-2">
+                    <input type="text" class="form-control" name="questions[]" placeholder="Nhập câu hỏi">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Các đáp án</label>
+                    <div class="option-container">
+                        <div class="d-flex mb-2 align-items-center">
+                            <div class="form-check me-2">
+                                <input class="form-check-input" type="radio" name="correct_answer_${questionIndex}" value="0" checked>
+                            </div>
+                            <input type="text" class="form-control" name="options_${questionIndex}[]" placeholder="Đáp án 1">
+                        </div>
+                        <div class="d-flex mb-2 align-items-center">
+                            <div class="form-check me-2">
+                                <input class="form-check-input" type="radio" name="correct_answer_${questionIndex}" value="1">
+                            </div>
+                            <input type="text" class="form-control" name="options_${questionIndex}[]" placeholder="Đáp án 2">
+                        </div>
+                        <div class="d-flex mb-2 align-items-center">
+                            <div class="form-check me-2">
+                                <input class="form-check-input" type="radio" name="correct_answer_${questionIndex}" value="2">
+                            </div>
+                            <input type="text" class="form-control" name="options_${questionIndex}[]" placeholder="Đáp án 3">
+                        </div>
+                        <div class="d-flex mb-2 align-items-center">
+                            <div class="form-check me-2">
+                                <input class="form-check-input" type="radio" name="correct_answer_${questionIndex}" value="3">
+                            </div>
+                            <input type="text" class="form-control" name="options_${questionIndex}[]" placeholder="Đáp án 4">
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            questionsContainer.appendChild(questionDiv);
+            questionCount++;
+
+            // Thêm sự kiện xóa câu hỏi
+            const deleteBtn = questionDiv.querySelector('.delete-question');
+            deleteBtn.addEventListener('click', function () {
+                questionsContainer.removeChild(questionDiv);
+            });
+        });
+
+        // Thêm một hidden field để lưu dữ liệu dưới dạng JSON khi submit form
+        document.querySelector('form').addEventListener('submit', function (e) {
+            if (!document.getElementById('videoCheck').checked &&
+                !document.getElementById('documentCheck').checked &&
+                document.getElementById('exerciseCheck').checked) {
+
+                e.preventDefault();
+
+                const quizData = [];
+                const questionItems = document.querySelectorAll('.question-item');
+
+                questionItems.forEach((item, index) => {
+                    const questionText = item.querySelector('input[name="questions[]"]').value;
+                    const options = Array.from(item.querySelectorAll(`input[name^="options_${index}"]`))
+                        .map(input => input.value);
+                    const correctAnswer = parseInt(
+                        item.querySelector(`input[name="correct_answer_${index}"]:checked`).value
+                    );
+
+                    quizData.push({
+                        question: questionText,
+                        options: options,
+                        correctAnswer: correctAnswer
+                    });
+                });
+
+                // Tạo input hidden để lưu dữ liệu JSON
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'exerciseContent';
+                hiddenInput.value = JSON.stringify(quizData);
+
+                this.appendChild(hiddenInput);
+                this.submit();
+            }
+        });
     });
 </script>

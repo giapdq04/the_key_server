@@ -13,7 +13,7 @@ class AuthController {
             const formData = req.body;
             const user = await Admin.findOne({
                 admin_name: formData.admin_name.trim(),
-                password: formData.password.trim()
+                password: formData.password
             });
 
             if (user) {
@@ -82,12 +82,21 @@ class AuthController {
     async showAllAdmins(req, res) {
         try {
             const admins = await Admin.find({})
-
             const currentUser = req.session.user
+
+            // Get any error or success messages from the session
+            const error = req.session.error;
+            const success = req.session.success;
+
+            // Clear the messages after using them
+            delete req.session.error;
+            delete req.session.success;
 
             res.render('admin/admins', {
                 admins: multipleMongooseObject(admins),
-                currentUser: currentUser
+                currentUser: currentUser,
+                error: error,
+                success: success
             })
         } catch (error) {
             console.log(error);
@@ -133,7 +142,7 @@ class AuthController {
 
             const newAdmin = new Admin({
                 admin_name: admin_name.trim(),
-                password: password.trim(),
+                password: password,
                 power: power
             })
 
@@ -189,41 +198,39 @@ class AuthController {
             const updatedAdmin = await Admin.findById(id)
 
             if (!updatedAdmin) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Admin này không tồn tại'
-                })
+                req.session.error = 'Admin này không tồn tại';
+                return res.redirect('/admins');
             }
 
             const { power } = req.body
 
+            if (!power) {
+                req.session.error = 'Quyền hạn không được để trống';
+                return res.redirect('/admins');
+            }
+
             const currentUser = req.session.user
 
             if (power <= currentUser.power) {
-                return res.status(401).json({
-                    success: false,
-                    message: 'Bạn không có quyền sửa admin này'
-                })
+                req.session.error = 'Bạn không có quyền sửa admin này';
+                return res.redirect('/admins');
             }
 
             if (power < 0 || power > 10) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Quyền phải nằm trong khoảng từ 0 đến 10'
-                })
+                req.session.error = 'Quyền phải nằm trong khoảng từ 0 đến 10';
+                return res.redirect('/admins');
             }
 
             updatedAdmin.power = power
 
             await updatedAdmin.save()
 
+            req.session.success = 'Cập nhật quyền thành công';
             res.redirect('/admins')
         } catch (error) {
             console.log(error);
-            res.status(500).json({
-                success: false,
-                message: 'Internal server error'
-            })
+            req.session.error = 'Đã xảy ra lỗi, vui lòng thử lại';
+            res.redirect('/admins');
         }
     }
 }

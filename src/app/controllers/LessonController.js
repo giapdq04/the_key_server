@@ -5,11 +5,13 @@ const Lesson = require('../models/Lesson');
 const { getYouTubeVideoId } = require('../../util/videoId');
 
 class LessonController {
-    // [GET] /courses/:courseId/sections/:sectionId/lessons/create
+    // [GET] /courses/:courseID/sections/:sectionID/lessons/create
     async showCreate(req, res) {
         try {
-            const course = await Course.findById(req.params.courseId);
-            const section = await Section.findById(req.params.sectionId);
+            const { courseID, sectionID } = req.params;
+
+            const course = await Course.findById(courseID);
+            const section = await Section.findById(sectionID);
 
             if (!course || !section) {
                 return res.status(404).json({
@@ -32,17 +34,20 @@ class LessonController {
         }
     }
 
-    // [POST] /courses/:courseId/sections/:sectionId/lessons
+    // [POST] /courses/:courseID/sections/:sectionID/lessons
     async create(req, res) {
         try {
+            const { ytbVideoLink, exerciseContent } = req.body;
+            const { courseID } = req.params;
+
             const lesson = new Lesson({
                 ...req.body,
-                ytbVideoID: getYouTubeVideoId(req.body.ytbVideoLink),
-                courseID: req.params.courseId,
-                sectionID: req.params.sectionId
+                ...req.params,
+                ytbVideoID: getYouTubeVideoId(ytbVideoLink),
+                questions: exerciseContent,
             });
             await lesson.save();
-            const course = await Course.findById(req.params.courseId);
+            const course = await Course.findById(courseID);
             res.redirect(`/${course.slug}/lessons`);
         } catch (error) {
             console.log(error);
@@ -53,10 +58,11 @@ class LessonController {
         }
     }
 
-    // [DELETE] /courses/:courseId/lessons/:id
+    // [DELETE] /courses/:courseID/lessons/:id
     async delete(req, res) {
         try {
-            const lesson = await Lesson.findById(req.params.id);
+            const { id, courseID } = req.params;
+            const lesson = await Lesson.findById(id);
             if (!lesson) {
                 return res.status(404).json({
                     success: false,
@@ -64,8 +70,16 @@ class LessonController {
                 });
             }
 
-            const course = await Course.findById(req.params.courseId);
-            await Lesson.delete({ _id: req.params.id });
+            const course = await Course.findById(courseID);
+
+            if (!course) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Không tìm thấy khóa học'
+                });
+            }
+
+            await Lesson.delete({ _id: id });
             res.redirect(`/${course.slug}/lessons`);
         } catch (error) {
             console.log(error);
