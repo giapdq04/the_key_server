@@ -31,13 +31,13 @@
                     </td>
                     <td>{{formatDate this.createdAt}}</td>
                     <td>
-                        {{!-- <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                        {{#if (gt this.power ../currentUser.power)}}
+                        <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
                             data-bs-target="#editAdminModal" data-admin-id="{{this._id}}"
                             data-admin-name="{{this.admin_name}}" data-power="{{this.power}}">
                             <i class="bi bi-pencil"></i> Sửa
-                        </button> --}}
+                        </button>
 
-                        {{#if (gt this.power ../currentUser.power)}}
                         <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
                             data-bs-target="#deleteModal" data-admin-id="{{this._id}}"
                             data-admin-name="{{this.admin_name}}">
@@ -80,6 +80,32 @@
 <!-- Hidden delete form -->
 <form id="deleteForm" method="POST" style="display: none;"></form>
 
+{{!-- Update admin modal --}}
+<div class="modal fade" id="editAdminModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Sửa quyền cho "<span id="adminNameToUpdate"></span>"</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editAdminForm" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="editAdminPower" class="form-label">Quyền (<strong>càng thấp càng mạnh và chỉ nhập
+                                được số
+                                0-10</strong>)</label>
+                        <input type="number" class="form-control" id="editAdminPower" name="power" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
 
@@ -104,6 +130,25 @@
         })
 
         // chức năng thay đổi quyền hạn
+        const editAdminModal = document.getElementById('editAdminModal')
+        const editAdminForm = document.getElementById('editAdminForm')
+        const editAdminPower = document.getElementById('editAdminPower')
+        const adminNameToUpdate = document.getElementById('adminNameToUpdate')
+        let adminIdToUpdate
 
+        editAdminModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget
+            adminIdToUpdate = button.getAttribute('data-admin-id')
+            const adminName = button.getAttribute('data-admin-name')
+            const power = button.getAttribute('data-power')
+            adminNameToUpdate.textContent = adminName
+            editAdminPower.value = power
+        })
+
+        editAdminForm.addEventListener('submit', function (e) {
+            e.preventDefault()
+            editAdminForm.action = `/admins/${adminIdToUpdate}?_method=PATCH`
+            editAdminForm.submit()
+        })
     })
 </script>

@@ -217,11 +217,7 @@ class AuthController {
 
             await updatedAdmin.save()
 
-            // res.redirect('/admins')
-            res.status(200).json({
-                success: true,
-                message: 'Cập nhật admin thành công'
-            })
+            res.redirect('/admins')
         } catch (error) {
             console.log(error);
             res.status(500).json({
