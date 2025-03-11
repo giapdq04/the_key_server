@@ -1,0 +1,239 @@
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <h3 class="mb-4">Sửa bài học</h3>
+            <form autocomplete="off" method="POST" action="/courses/{{course._id}}/lessons/{{lesson._id}}?_method=PUT">
+                <!-- Lesson type selection -->
+                <div class="mb-3">
+                    <label class="form-label">Loại bài học</label>
+                    <div class="d-flex gap-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" value="video" id="videoCheck" name="lessonType"
+                                {{#if lesson.ytbVideoID}}checked{{/if}}>
+                            <label class="form-check-label" for="videoCheck">
+                                <i class="bi bi-play-circle me-1"></i>Video
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" value="document" id="documentCheck"
+                                name="lessonType" {{#if lesson.docLink}}checked{{/if}}>
+                            <label class="form-check-label" for="documentCheck">
+                                <i class="bi bi-file-earmark-text me-1"></i>Tài liệu
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" value="exercise" id="exerciseCheck"
+                                name="lessonType" {{#if lesson.questions}}checked{{/if}}>
+                            <label class="form-check-label" for="exerciseCheck">
+                                <i class="bi bi-pencil-square me-1"></i>Bài tập
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Title field -->
+                <div class="mb-3">
+                    <label for="lessonTitle" class="form-label">Tiêu đề</label>
+                    <input type="text" class="form-control" id="lessonTitle" name="title" value="{{lesson.title}}"
+                        required>
+                </div>
+
+                <!-- Dynamic fields based on selection -->
+                <div id="videoField" class="mb-3 {{#unless lesson.ytbVideoID}}d-none{{/unless}}">
+                    <label for="lessonVideo" class="form-label">Link Video</label>
+                    <input type="text" class="form-control" id="lessonVideo" name="ytbVideoLink"
+                        value="{{#if lesson.ytbVideoID}}https://www.youtube.com/watch?v={{lesson.ytbVideoID}}{{/if}}">
+                </div>
+
+                <div id="documentField" class="mb-3 {{#unless lesson.docLink}}d-none{{/unless}}">
+                    <label for="lessonResource" class="form-label">Link Tài liệu</label>
+                    <input type="text" class="form-control" id="lessonResource" name="docLink"
+                        value="{{lesson.docLink}}">
+                </div>
+
+                <div id="exerciseField" class="mb-3 {{#unless lesson.questions}}d-none{{/unless}}">
+                    <label class="form-label">Câu hỏi trắc nghiệm</label>
+                    <div id="questions-container">
+                        <!-- Câu hỏi sẽ được tải từ dữ liệu hiện có hoặc thêm mới -->
+                    </div>
+
+                    <button type="button" class="btn btn-outline-primary mt-2" id="add-question-btn">
+                        <i class="bi bi-plus-circle"></i> Thêm câu hỏi
+                    </button>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                    <a href="/{{course.slug}}/lessons" class="btn btn-secondary ms-2">Hủy</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const lessonTypes = document.getElementsByName('lessonType');
+        const videoField = document.getElementById('videoField');
+        const documentField = document.getElementById('documentField');
+        const exerciseField = document.getElementById('exerciseField');
+
+        function toggleFields(selectedType) {
+            videoField.classList.toggle('d-none', selectedType !== 'video');
+            documentField.classList.toggle('d-none', selectedType !== 'document');
+            exerciseField.classList.toggle('d-none', selectedType !== 'exercise');
+        }
+
+        lessonTypes.forEach(radio => {
+            radio.addEventListener('change', function () {
+                toggleFields(this.value);
+            });
+        });
+
+        // Xác định loại bài học hiện tại để hiển thị phù hợp
+        if (document.getElementById('videoCheck').checked) {
+            toggleFields('video');
+        } else if (document.getElementById('documentCheck').checked) {
+            toggleFields('document');
+        } else if (document.getElementById('exerciseCheck').checked) {
+            toggleFields('exercise');
+        }
+
+        // Xử lý hiển thị câu hỏi có sẵn
+        const questionsContainer = document.getElementById('questions-container');
+        let questionCount = 0;
+
+        // Load câu hỏi có sẵn nếu có
+        const existingQuestions = '{{lesson.questions}}';
+        if (existingQuestions) {
+            try {
+                const questions = JSON.parse(existingQuestions.replace(/&quot;/g, '"'));
+                if (Array.isArray(questions)) {
+                    questions.forEach(question => {
+                        addQuestionToForm(question.question, question.options, question.correctAnswer);
+                    });
+                }
+            } catch (error) {
+                console.error("Error parsing questions:", error);
+            }
+        }
+
+        function addQuestionToForm(question = '', options = ['', '', '', ''], correctAnswer = 0) {
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question-item border rounded p-3 mb-3';
+
+            const questionIndex = questionCount;
+
+            questionDiv.innerHTML = `
+                <div class="d-flex justify-content-between mb-2">
+                    <label class="form-label">Câu hỏi</label>
+                    <button type="button" class="btn btn-sm btn-outline-danger delete-question">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+                <div class="mb-2">
+                    <input type="text" class="form-control" name="questions[]" placeholder="Nhập câu hỏi" value="${question}">
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Các đáp án</label>
+                    <div class="option-container">
+                        <div class="d-flex mb-2 align-items-center">
+                            <div class="form-check me-2">
+                                <input class="form-check-input" type="radio" name="correct_answer_${questionIndex}" value="0" ${correctAnswer === 0 ? 'checked' : ''}>
+                            </div>
+                            <input type="text" class="form-control" name="options_${questionIndex}[]" placeholder="Đáp án 1" value="${options[0] || ''}">
+                        </div>
+                        <div class="d-flex mb-2 align-items-center">
+                            <div class="form-check me-2">
+                                <input class="form-check-input" type="radio" name="correct_answer_${questionIndex}" value="1" ${correctAnswer === 1 ? 'checked' : ''}>
+                            </div>
+                            <input type="text" class="form-control" name="options_${questionIndex}[]" placeholder="Đáp án 2" value="${options[1] || ''}">
+                        </div>
+                        <div class="d-flex mb-2 align-items-center">
+                            <div class="form-check me-2">
+                                <input class="form-check-input" type="radio" name="correct_answer_${questionIndex}" value="2" ${correctAnswer === 2 ? 'checked' : ''}>
+                            </div>
+                            <input type="text" class="form-control" name="options_${questionIndex}[]" placeholder="Đáp án 3" value="${options[2] || ''}">
+                        </div>
+                        <div class="d-flex mb-2 align-items-center">
+                            <div class="form-check me-2">
+                                <input class="form-check-input" type="radio" name="correct_answer_${questionIndex}" value="3" ${correctAnswer === 3 ? 'checked' : ''}>
+                            </div>
+                            <input type="text" class="form-control" name="options_${questionIndex}[]" placeholder="Đáp án 4" value="${options[3] || ''}">
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            questionsContainer.appendChild(questionDiv);
+            questionCount++;
+
+            // Thêm sự kiện xóa câu hỏi
+            const deleteBtn = questionDiv.querySelector('.delete-question');
+            deleteBtn.addEventListener('click', function () {
+                questionsContainer.removeChild(questionDiv);
+            });
+        }
+
+        // Xử lý thêm câu hỏi mới
+        const addQuestionBtn = document.getElementById('add-question-btn');
+        addQuestionBtn.addEventListener('click', function () {
+            addQuestionToForm();
+        });
+
+        // Xử lý khi form được submit
+        document.querySelector('form').addEventListener('submit', function (e) {
+            // Dựa vào loại bài học được chọn, xóa dữ liệu của các trường không cần thiết
+            const selectedType = document.querySelector('input[name="lessonType"]:checked').value;
+
+            if (selectedType === 'video') {
+                // Nếu chọn video, xóa dữ liệu trường tài liệu và bài tập
+                document.getElementById('lessonResource').value = '';
+                // Không cần tạo input hidden cho exerciseContent
+            } else if (selectedType === 'document') {
+                // Nếu chọn tài liệu, xóa dữ liệu trường video và bài tập
+                document.getElementById('lessonVideo').value = '';
+                // Không cần tạo input hidden cho exerciseContent
+            } else if (selectedType === 'exercise') {
+                // Nếu chọn bài tập, xóa dữ liệu trường video và tài liệu
+                document.getElementById('lessonVideo').value = '';
+                document.getElementById('lessonResource').value = '';
+
+                // Xử lý bài tập
+                e.preventDefault();
+
+                const quizData = [];
+                const questionItems = document.querySelectorAll('.question-item');
+
+                questionItems.forEach((item, index) => {
+                    const questionText = item.querySelector('input[name="questions[]"]').value;
+                    const options = Array.from(item.querySelectorAll(`input[name^="options_${index}"]`))
+                        .map(input => input.value.trim());
+                    const correctAnswer = parseInt(
+                        item.querySelector(`input[name="correct_answer_${index}"]:checked`).value
+                    );
+
+                    quizData.push({
+                        question: questionText.trim(),
+                        options: options,
+                        correctAnswer: correctAnswer
+                    });
+                });
+
+                // Tạo input hidden để lưu dữ liệu JSON
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'exerciseContent';
+                hiddenInput.value = JSON.stringify(quizData);
+
+                this.appendChild(hiddenInput);
+
+                // Thêm dòng này để tiếp tục submit form sau khi thêm input hidden
+                this.submit();
+            }
+
+            // Nếu không phải exercise, form sẽ submit bình thường
+            return true;
+        });
+    });
+</script>

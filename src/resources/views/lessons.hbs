@@ -20,7 +20,7 @@
                                 data-lesson-type="{{#if this.ytbVideoID}}video{{else if this.docLink}}document{{else}}exercise{{/if}}"
                                 data-lesson-video="{{this.ytbVideoID}}" data-lesson-doc="{{this.docLink}}"
                                 data-lesson-content="{{this.content}}">
-                                <i class="bi bi-play-circle me-2"></i>
+                                {{{lessonTypeIcon this}}}
                                 {{this.title}}
                             </div>
                             <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"

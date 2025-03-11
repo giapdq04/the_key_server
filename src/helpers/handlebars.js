@@ -18,16 +18,8 @@ module.exports = {
         return a !== b;
     },
 
-    lt: function (a, b) {
-        return a < b;
-    },
-
     gt: function (a, b) {
         return a > b;
-    },
-
-    and: function () {
-        return Array.prototype.slice.call(arguments, 0, -1).every(Boolean);
     },
 
     or: function () {
@@ -41,7 +33,15 @@ module.exports = {
         });
     },
 
-    toString: function (value) {
-        return value ? value.toString() : '';
+    lessonTypeIcon: function (lesson) {
+        if (lesson.ytbVideoID !== null) {
+            return '<i class="bi bi-play-circle me-2"></i>';
+        }
+
+        if (lesson.docLink !== '' && lesson.docLink !== null) {
+            return '<i class="bi bi-file-earmark-text me-1"></i>'
+        }
+
+        return '<i class="bi bi-pencil-square me-1"></i>'
     }
 };
