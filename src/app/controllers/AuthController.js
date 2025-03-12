@@ -10,24 +10,25 @@ class AuthController {
     // [POST] /login
     async loginPost(req, res) {
         try {
-            const formData = req.body;
+            const { admin_name, password } = req.body;
+
+            // Use lean() to get plain JavaScript object instead of Mongoose Document
             const user = await Admin.findOne({
-                admin_name: formData.admin_name.trim(),
-                password: formData.password
-            });
+                admin_name: admin_name.trim(),
+                password
+            }).lean();
 
             if (user) {
                 req.session.user = user;
-                // Chuyển hướng người dùng đến trang mà họ đã cố truy cập trước đó
                 const redirectUrl = req.session.returnTo || '/';
-                delete req.session.returnTo; // Xóa đường dẫn đã lưu
-                res.redirect(redirectUrl);
-            } else {
-                res.render('login', {
-                    layout: false,
-                    error: 'Tên đăng nhập hoặc mật khẩu không đúng'
-                });
+                delete req.session.returnTo;
+                return res.redirect(redirectUrl);
             }
+
+            res.render('login', {
+                layout: false,
+                error: 'Tên đăng nhập hoặc mật khẩu không đúng'
+            });
         } catch (error) {
             console.error(error);
             res.render('login', {
@@ -40,193 +41,193 @@ class AuthController {
     // [GET] /logout
     logoutAdmin(req, res) {
         req.session.destroy(err => {
-            if (err) {
-                console.error('Lỗi khi đăng xuất:', err);
-            }
+            if (err) console.error('Lỗi khi đăng xuất:', err);
             res.redirect('/auth/login');
         });
     }
 
+    // [POST] /register
     async register(req, res) {
         try {
-            const formData = req.body
-            const result = await Admin.findOne({ admin_name: formData.admin_name })
+            const { admin_name, password, power } = req.body;
 
-            if (result) {
-                // Trả về lỗi nếu admin_name đã tồn tại
+            // Check if admin exists using exists() instead of findOne()
+            const adminExists = await Admin.exists({ admin_name: admin_name.trim() });
+
+            if (adminExists) {
                 return res.status(409).json({
                     success: false,
                     message: 'Tên này đã tồn tại'
-                })
+                });
             }
 
-            const newAdmin = new Admin(formData)
+            const newAdmin = new Admin({ admin_name: admin_name.trim(), password, power });
+            await newAdmin.save();
 
-            await newAdmin.save()
             res.status(201).json({
                 success: true,
                 message: 'Tạo tài khoản thành công'
-            })
+            });
         } catch (error) {
             console.log(error);
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'
-            })
+            });
         }
     }
-
-    // Admin
 
     // [GET] /admins
     async showAllAdmins(req, res) {
         try {
-            const admins = await Admin.find({})
-            const currentUser = req.session.user
+            // Use lean() for better performance
+            const admins = await Admin.find({}).lean();
+            const currentUser = req.session.user;
 
-            // Get any error or success messages from the session
-            const error = req.session.error;
-            const success = req.session.success;
-
-            // Clear the messages after using them
+            const { error, success } = req.session;
             delete req.session.error;
             delete req.session.success;
 
             res.render('admin/admins', {
-                admins: multipleMongooseObject(admins),
-                currentUser: currentUser,
-                error: error,
-                success: success
-            })
+                admins, // No need for multipleMongooseObject when using lean()
+                currentUser,
+                error,
+                success
+            });
         } catch (error) {
             console.log(error);
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'
-            })
+            });
         }
     }
 
     // [GET] /admins/create
     createAdminForm(req, res) {
-        res.render('admin/createAdmin')
+        res.render('admin/createAdmin');
     }
 
-    // [Add] /admins
+    // [POST] /admins
     async createAdmin(req, res) {
         try {
-            const currentUser = req.session.user
-            const { admin_name, password, power } = req.body
+            const currentUser = req.session.user;
+            const { admin_name, password, power } = req.body;
 
-            const result = await Admin.findOne({ admin_name })
+            // Parse power as integer
+            const powerInt = parseInt(power, 10);
 
-            if (result) {
-                // Trả về lỗi nếu admin_name đã tồn tại
-                return res.render('admin/createAdmin', {
-                    error: 'Tên này đã tồn tại'
-                })
-            }
-
-            // Kiểm tra quyền của admin hiện tại
-            if (currentUser.power >= power) {
-                return res.render('admin/createAdmin', {
-                    error: 'Bạn không có quyền thêm admin này'
-                })
-            }
-
-            if (power < 0 || power > 10) {
+            // Validate input early
+            if (powerInt < 0 || powerInt > 10 || isNaN(powerInt)) {
                 return res.render('admin/createAdmin', {
                     error: 'Quyền phải nằm trong khoảng từ 0 đến 10'
-                })
+                });
+            }
+
+            if (currentUser.power >= powerInt) {
+                return res.render('admin/createAdmin', {
+                    error: 'Bạn không có quyền thêm admin này'
+                });
+            }
+
+            // Use exists() instead of findOne()
+            const adminExists = await Admin.exists({ admin_name: admin_name.trim() });
+
+            if (adminExists) {
+                return res.render('admin/createAdmin', {
+                    error: 'Tên này đã tồn tại'
+                });
             }
 
             const newAdmin = new Admin({
                 admin_name: admin_name.trim(),
-                password: password,
-                power: power
-            })
+                password,
+                power: powerInt
+            });
 
-            await newAdmin.save()
-            res.redirect('/admins')
+            await newAdmin.save();
+            res.redirect('/admins');
         } catch (error) {
             console.log(error);
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'
-            })
+            });
         }
     }
 
-    // [DELETE] /admins
+    // [DELETE] /admins/:id
     async deleteAdmin(req, res) {
         try {
-            const currentUser = req.session.user
-            const { id } = req.params
+            const currentUser = req.session.user;
+            const { id } = req.params;
 
-            const deteledAdmin = await Admin.findById(id)
+            // Use findById with lean() and select only needed fields
+            const deletedAdmin = await Admin.findById(id).select('power').lean();
 
-            if (!deteledAdmin) {
+            if (!deletedAdmin) {
                 return res.status(404).json({
                     success: false,
                     message: 'Admin không tồn tại'
-                })
+                });
             }
 
-            if (currentUser.power >= deteledAdmin.power) {
+            if (currentUser.power >= deletedAdmin.power) {
                 return res.status(401).json({
                     success: false,
                     message: 'Bạn không có quyền xóa admin này'
-                })
+                });
             }
 
-            await Admin.deleteOne({ _id: id })
-            res.redirect('/admins')
-
+            await Admin.deleteOne({ _id: id });
+            res.redirect('/admins');
         } catch (error) {
             console.log(error);
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'
-            })
+            });
         }
     }
 
-    // [PATCH] /admins
+    // [PATCH] /admins/:id
     async updateAdmin(req, res) {
         try {
-            const { id } = req.params
-            const updatedAdmin = await Admin.findById(id)
+            const { id } = req.params;
+            const { power } = req.body;
+            const powerInt = parseInt(power, 10);
+            const currentUser = req.session.user;
 
-            if (!updatedAdmin) {
-                req.session.error = 'Admin này không tồn tại';
+            // Validate input early
+            if (!power || isNaN(powerInt)) {
+                req.session.error = 'Quyền hạn không được để trống và phải là số';
                 return res.redirect('/admins');
             }
 
-            const { power } = req.body
-
-            if (!power) {
-                req.session.error = 'Quyền hạn không được để trống';
-                return res.redirect('/admins');
-            }
-
-            const currentUser = req.session.user
-
-            if (power <= currentUser.power) {
-                req.session.error = 'Bạn không có quyền sửa admin này';
-                return res.redirect('/admins');
-            }
-
-            if (power < 0 || power > 10) {
+            if (powerInt < 0 || powerInt > 10) {
                 req.session.error = 'Quyền phải nằm trong khoảng từ 0 đến 10';
                 return res.redirect('/admins');
             }
 
-            updatedAdmin.power = power
+            if (powerInt <= currentUser.power) {
+                req.session.error = 'Bạn không có quyền sửa admin này';
+                return res.redirect('/admins');
+            }
 
-            await updatedAdmin.save()
+            // Use findByIdAndUpdate instead of findById + save
+            const result = await Admin.findByIdAndUpdate(
+                id,
+                { power: powerInt },
+                { new: true, runValidators: true }
+            );
+
+            if (!result) {
+                req.session.error = 'Admin này không tồn tại';
+                return res.redirect('/admins');
+            }
 
             req.session.success = 'Cập nhật quyền thành công';
-            res.redirect('/admins')
+            res.redirect('/admins');
         } catch (error) {
             console.log(error);
             req.session.error = 'Đã xảy ra lỗi, vui lòng thử lại';
