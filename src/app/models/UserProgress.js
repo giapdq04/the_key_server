@@ -23,14 +23,6 @@ const UserProgress = new Schema({
             default: Date.now
         }
     }],
-    lastAccessedLesson: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Lesson'
-    },
-    progress: {
-        type: Number,
-        default: 0 // Phần trăm hoàn thành (0-100)
-    },
     enrolledAt: {
         type: Date,
         default: Date.now
