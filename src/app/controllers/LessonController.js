@@ -3,6 +3,7 @@ const { mongooseToObject, multipleMongooseObject } = require('../../util/mongoos
 const Course = require('../models/Course');
 const Lesson = require('../models/Lesson');
 const { getYouTubeVideoId } = require('../../util/videoId');
+const mongoose = require('mongoose');
 
 class LessonController {
     // [GET] /courses/:courseID/sections/:sectionID/lessons/create
@@ -10,13 +11,32 @@ class LessonController {
         try {
             const { courseID, sectionID } = req.params;
 
-            const course = await Course.findById(courseID);
-            const section = await Section.findById(sectionID);
+            // Kiểm tra tính hợp lệ của ID trước khi truy vấn
+            if (!mongoose.Types.ObjectId.isValid(courseID) || !mongoose.Types.ObjectId.isValid(sectionID)) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'ID không hợp lệ'
+                });
+            }
+
+            // Thực thi truy vấn song song 
+            const [course, section] = await Promise.all([
+                Course.findById(courseID, 'title slug description'), // Chỉ lấy các trường cần thiết
+                Section.findById(sectionID, 'title courseID')
+            ]);
 
             if (!course || !section) {
                 return res.status(404).json({
                     success: false,
                     message: 'Không tìm thấy khóa học hoặc chương học'
+                });
+            }
+
+            // Kiểm tra xem section có thuộc về course không
+            if (section.courseID.toString() !== courseID) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Chương học không thuộc về khóa học này'
                 });
             }
 
@@ -34,20 +54,47 @@ class LessonController {
         }
     }
 
-    // [POST] /courses/:courseID/sections/:sectionID/lessons
+    // Tối ưu phương thức create
     async create(req, res) {
         try {
             const { ytbVideoLink, exerciseContent } = req.body;
-            const { courseID } = req.params;
+            const { courseID, sectionID } = req.params;
+
+            // Kiểm tra ID hợp lệ
+            if (!mongoose.Types.ObjectId.isValid(courseID) || !mongoose.Types.ObjectId.isValid(sectionID)) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'ID không hợp lệ'
+                });
+            }
+
+            // Kiểm tra course và section tồn tại
+            const [courseExists, sectionExists] = await Promise.all([
+                Course.exists({ _id: courseID }),
+                Section.exists({ _id: sectionID, courseID })
+            ]);
+
+            if (!courseExists || !sectionExists) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Không tìm thấy khóa học hoặc chương học'
+                });
+            }
 
             const lesson = new Lesson({
                 ...req.body,
-                ...req.params,
+                courseID,
+                sectionID,
                 ytbVideoID: getYouTubeVideoId(ytbVideoLink),
                 questions: exerciseContent,
             });
-            await lesson.save();
-            const course = await Course.findById(courseID);
+
+            // Lưu bài học và lấy khóa học cùng lúc
+            const [savedLesson, course] = await Promise.all([
+                lesson.save(),
+                Course.findById(courseID, 'slug') // Chỉ lấy trường slug
+            ]);
+
             res.redirect(`/${course.slug}/lessons`);
         } catch (error) {
             console.log(error);
@@ -62,7 +109,22 @@ class LessonController {
     async delete(req, res) {
         try {
             const { id, courseID } = req.params;
-            const lesson = await Lesson.findById(id);
+
+            // Kiểm tra tính hợp lệ của ID trước khi truy vấn
+            if (!mongoose.Types.ObjectId.isValid(id) || !mongoose.Types.ObjectId.isValid(courseID)) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'ID không hợp lệ'
+                });
+            }
+
+            // Truy vấn song song bài học và khóa học
+            const [lesson, course] = await Promise.all([
+                Lesson.exists({ _id: id }), // Chỉ kiểm tra tồn tại, không cần lấy toàn bộ thông tin
+                Course.findById(courseID, 'slug') // Chỉ lấy trường slug cần thiết
+            ]);
+
+            // Kiểm tra bài học tồn tại
             if (!lesson) {
                 return res.status(404).json({
                     success: false,
@@ -70,8 +132,7 @@ class LessonController {
                 });
             }
 
-            const course = await Course.findById(courseID);
-
+            // Kiểm tra khóa học tồn tại
             if (!course) {
                 return res.status(404).json({
                     success: false,
@@ -79,6 +140,7 @@ class LessonController {
                 });
             }
 
+            // Xóa bài học và chuyển hướng
             await Lesson.delete({ _id: id });
             res.redirect(`/${course.slug}/lessons`);
         } catch (error) {
@@ -94,20 +156,40 @@ class LessonController {
         try {
             const { courseID, id } = req.params;
 
-            const course = await Course.findById(courseID);
+            // Kiểm tra tính hợp lệ của ID trước khi truy vấn
+            if (!mongoose.Types.ObjectId.isValid(courseID) || !mongoose.Types.ObjectId.isValid(id)) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'ID không hợp lệ'
+                });
+            }
 
+            // Thực hiện các truy vấn song song để giảm thời gian chờ
+            const [course, lesson] = await Promise.all([
+                Course.findById(courseID, 'title slug description'), // Chỉ lấy các trường cần thiết
+                Lesson.findById(id)
+            ]);
+
+            // Kiểm tra course và lesson tồn tại
             if (!course) {
                 return res.status(404).json({
                     success: false,
                     message: 'Không tìm thấy khóa học'
                 });
             }
-            const lesson = await Lesson.findById(id)
 
             if (!lesson) {
                 return res.status(404).json({
                     success: false,
                     message: 'Không tìm thấy bài học'
+                });
+            }
+
+            // Kiểm tra xem bài học có thuộc về khóa học này không
+            if (lesson.courseID.toString() !== courseID) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Bài học không thuộc về khóa học này'
                 });
             }
 
@@ -123,7 +205,6 @@ class LessonController {
                 success: false,
                 message: 'Internal server error'
             });
-
         }
     }
 
@@ -132,6 +213,35 @@ class LessonController {
             const { id, courseID } = req.params;
             const { title, lessonType, ytbVideoLink, docLink, exerciseContent } = req.body;
 
+            // Kiểm tra tính hợp lệ của ID trước khi truy vấn
+            if (!mongoose.Types.ObjectId.isValid(id) || !mongoose.Types.ObjectId.isValid(courseID)) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'ID không hợp lệ'
+                });
+            }
+
+            // Kiểm tra xem bài học và khóa học tồn tại
+            const [lesson, course] = await Promise.all([
+                Lesson.exists({ _id: id, courseID }),
+                Course.findById(courseID, 'slug') // Chỉ lấy trường slug cần thiết
+            ]);
+
+            if (!lesson) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Không tìm thấy bài học hoặc bài học không thuộc về khóa học này'
+                });
+            }
+
+            if (!course) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Không tìm thấy khóa học'
+                });
+            }
+
+            // Chuẩn bị dữ liệu cập nhật
             const updateData = { title: title.trim() };
 
             // Dựa vào loại bài học, cập nhật dữ liệu tương ứng
@@ -141,7 +251,7 @@ class LessonController {
                 updateData.questions = null;
             } else if (lessonType === 'document') {
                 updateData.ytbVideoID = null;
-                updateData.docLink = docLink.trim();
+                updateData.docLink = docLink ? docLink.trim() : '';
                 updateData.questions = null;
             } else if (lessonType === 'exercise') {
                 updateData.ytbVideoID = null;
@@ -149,9 +259,12 @@ class LessonController {
                 updateData.questions = exerciseContent;
             }
 
-            await Lesson.findByIdAndUpdate(id, updateData);
+            // Cập nhật bài học
+            await Lesson.findByIdAndUpdate(id, updateData, {
+                runValidators: true  // Đảm bảo dữ liệu hợp lệ theo schema
+            });
 
-            const course = await Course.findById(courseID);
+            // Chuyển hướng người dùng
             res.redirect(`/${course.slug}/lessons`);
         } catch (error) {
             console.log(error);

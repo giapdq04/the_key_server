@@ -94,6 +94,56 @@ class CourseUserController {
             res.status(500).json({ message: "Internal server error" })
         }
     }
+
+    // Thêm phương thức đăng ký khóa học
+    async enrollCourse(req, res) {
+        try {
+            const { courseID, userID } = req.params;
+
+            // Kiểm tra xem khóa học tồn tại không
+            const course = await Course.findById(courseID);
+            if (!course) {
+                return res.status(404).json({ message: "Course not found" });
+            }
+
+            // Kiểm tra xem người dùng tồn tại không
+            const user = await User.findById(userID);
+            if (!user) {
+                return res.status(404).json({ message: "User not found" });
+            }
+
+            // Kiểm tra xem người dùng đã đăng ký khóa học này chưa
+            const existingProgress = await UserProgress.findOne({
+                userID: userID,
+                courseID: courseID
+            });
+
+            if (existingProgress) {
+                return res.status(400).json({ message: "User already enrolled in this course" });
+            }
+
+            // Tạo bản ghi tiến trình mới cho người dùng
+            const userProgress = new UserProgress({
+                userID: userID,
+                courseID: courseID,
+                completedLessons: [],
+                enrolledAt: new Date()
+            });
+
+            await userProgress.save();
+
+            res.status(201).json({
+                message: "Enrolled successfully",
+                enrolledAt: userProgress.enrolledAt,
+                courseID: courseID,
+                userID: userID
+            });
+
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({ message: "Internal server error" });
+        }
+    }
 }
 
 module.exports = new CourseUserController()
