@@ -10,7 +10,7 @@ const helmet = require('helmet')
 const cors = require('cors') // Thêm dòng này
 const hbsHelpers = require('./helpers/handlebars');
 const app = express()
-const port = 3000
+const port = 8080
 
 const route = require('./routes')
 const db = require('./config/db')
@@ -20,7 +20,7 @@ db.connect()
 
 // Thêm middleware CORS
 app.use(cors({
-    origin: 'http://localhost:3001', // Chỉ cho phép từ nguồn này truy cập API của bạn
+    origin: 'http://localhost:3000', // Chỉ cho phép từ nguồn này truy cập API của bạn
     credentials: true, // Cho phép gửi cookies qua CORS
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS']
 }));
@@ -34,7 +34,7 @@ app.use(helmet({
             styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
             imgSrc: ["'self'", "data:", "https://img.youtube.com", "https://*.ytimg.com", "https://github.com", "https://avatars.githubusercontent.com"],
             frameSrc: ["'self'", "https://www.youtube.com", "https://youtube.com"],
-            connectSrc: ["'self'", "http://localhost:3001"]
+            connectSrc: ["'self'", "http://localhost:3000"]
         }
     },
     xssFilter: true,
