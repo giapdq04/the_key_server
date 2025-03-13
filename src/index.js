@@ -7,6 +7,7 @@ const { engine } = require('express-handlebars');
 const path = require("path");
 const methodOverride = require('method-override')
 const helmet = require('helmet')
+const cors = require('cors') // Thêm dòng này
 const hbsHelpers = require('./helpers/handlebars');
 const app = express()
 const port = 3000
@@ -17,6 +18,13 @@ const db = require('./config/db')
 // Connect to DB
 db.connect()
 
+// Thêm middleware CORS
+app.use(cors({
+    origin: 'http://localhost:3001', // Chỉ cho phép từ nguồn này truy cập API của bạn
+    credentials: true, // Cho phép gửi cookies qua CORS
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS']
+}));
+
 // Thêm middleware bảo mật helmet
 app.use(helmet({
     contentSecurityPolicy: {
@@ -26,7 +34,7 @@ app.use(helmet({
             styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
             imgSrc: ["'self'", "data:", "https://img.youtube.com", "https://*.ytimg.com", "https://github.com", "https://avatars.githubusercontent.com"],
             frameSrc: ["'self'", "https://www.youtube.com", "https://youtube.com"],
-            connectSrc: ["'self'"]
+            connectSrc: ["'self'", "http://localhost:3001"]
         }
     },
     xssFilter: true,
