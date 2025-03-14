@@ -110,7 +110,7 @@ class CourseController {
             const courseId = req.params.id;
 
             // Soft delete the course
-            await Course.deleteOne({ _id: courseId });
+            await Course.delete({ _id: courseId });
 
             // Soft delete all sections of this course
             await Section.deleteMany({ courseID: courseId });

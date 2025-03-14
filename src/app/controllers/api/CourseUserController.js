@@ -7,12 +7,25 @@ const { mongooseToObject } = require("../../../util/mongoose")
 
 class CourseUserController {
 
+    // [GET] /all-courses
+    async getAllCourse(req, res) {
+        try {
+            const courses = await Course.find().select('_id title ytbVideoId slug') // đây là những trường dữ liệu muốn lấy
+
+            res.json(courses)
+        } catch (e) {
+            console.log(e)
+            res.status(500).json({ error: e })
+        }
+    }
+
+    // [GET] /:courseID/:userID
     async getCourseUser(req, res) {
         try {
             const { courseID, userID } = req.params
 
             // Tìm khóa học
-            const course = await Course.findById(courseID)
+            const course = await Course.findById(courseID).select('-deleted -updatedAt -createdAt -__v')
 
             if (!course) {
                 return res.status(404).json({ message: "Course not found" })
