@@ -44,7 +44,7 @@ class CourseUserController {
             const { courseID, userID } = req.params
 
             // Tìm khóa học
-            const course = await Course.findById(courseID).select('-deleted -updatedAt -createdAt -__v')
+            const course = await Course.findById(courseID).select('-deleted -updatedAt -createdAt -__v -description -ytbVideoId')
 
             if (!course) {
                 return res.status(404).json({ message: "Course not found" })
@@ -74,10 +74,10 @@ class CourseUserController {
             }
 
             // Lấy tất cả các chương của khóa học
-            const sections = await Section.find({ courseID: courseID })
+            const sections = await Section.find({ courseID: courseID }).select('-courseID -__v -deleted -createdAt -updatedAt')
 
             // Lấy tất cả các bài học của khóa học
-            const lessons = await Lesson.find({ courseID: courseID })
+            const lessons = await Lesson.find({ courseID: courseID }).select('-courseID -deleted -createdAt -__v')
 
             // Nhóm các bài học theo chương
             const sectionsWithLessons = sections.map(section => {
@@ -115,8 +115,7 @@ class CourseUserController {
                 progress: {
                     totalLessons,
                     completedLessons,
-                    progressPercentage,
-                    enrolledAt: userProgress.enrolledAt
+                    progressPercentage
                 },
                 isEnrolled: true
             })
