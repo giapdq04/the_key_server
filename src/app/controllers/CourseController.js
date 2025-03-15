@@ -217,6 +217,33 @@ class CourseController {
         }
     }
 
+    // async calculateDuration(req, res) {
+
+    //     function durationToSeconds(duration) {
+    //         const hours = duration.match(/(\d+)H/);
+    //         const minutes = duration.match(/(\d+)M/);
+    //         const seconds = duration.match(/(\d+)S/);
+
+    //         const h = hours ? parseInt(hours[1]) : 0;
+    //         const m = minutes ? parseInt(minutes[1]) : 0;
+    //         const s = seconds ? parseInt(seconds[1]) : 0;
+
+    //         return h * 3600 + m * 60 + s;
+    //     }
+
+    //     try {
+    //         const { courseID } = req.params
+    //         const course = await Course.findById(courseID)
+    //         res.json(course)
+    //     } catch (error) {
+    //         console.log(error);
+    //         res.status(500).json({
+    //             success: false,
+    //             message: 'Internal server error'
+    //         })
+    //     }
+    // }
+
 
 }
 

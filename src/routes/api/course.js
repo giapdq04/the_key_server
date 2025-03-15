@@ -1,11 +1,11 @@
 const express = require('express');
 const courseUserCtrl = require('../../app/controllers/api/CourseUserController');
-const { authenticateToken } = require('../../middlewares/authClient.middleware');
 const router = express.Router()
 
-router.get('/:courseID/:userID', courseUserCtrl.getCourseUser)
-router.post('/:courseID/:userID/enroll', courseUserCtrl.enrollCourse)
+router.get('/all-courses', courseUserCtrl.getAllCourse)
+router.get('/course-detail/:slug', courseUserCtrl.showCourseDetail)
 
-router.get('/all-courses', authenticateToken, courseUserCtrl.getAllCourse)
+router.get('/:courseID/:userID', courseUserCtrl.getCourseUser)
+router.post('/enroll', courseUserCtrl.enrollCourse)
 
 module.exports = router;
