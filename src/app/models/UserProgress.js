@@ -1,3 +1,4 @@
+const e = require('cors');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const mongooseDelete = require('mongoose-delete');
@@ -18,15 +19,12 @@ const UserProgress = new Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Lesson'
         },
-        completedAt: {
-            type: Date,
-            default: Date.now
+        status: {
+            type: Number,
+            enum: [1, 2, 3],
+            default: 3
         }
-    }],
-    enrolledAt: {
-        type: Date,
-        default: Date.now
-    }
+    }]
 }, {
     timestamps: true
 });

@@ -5,7 +5,7 @@ const mongooseDelete = require('mongoose-delete');
 const Lesson = new Schema({
     title: { type: String, required: true },
     ytbVideoID: { type: String },
-    docLink: { type: String },
+    docID: { type: String },
     questions: { type: String },
     courseID: {
         type: mongoose.Schema.Types.ObjectId,
@@ -16,7 +16,8 @@ const Lesson = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Section',
         required: true
-    }
+    },
+    duration: { type: String },
 }, {
     timestamps: true
 });

@@ -4,6 +4,8 @@ const Course = require('../models/Course');
 const Lesson = require('../models/Lesson');
 const { getYouTubeVideoId } = require('../../util/videoId');
 const mongoose = require('mongoose');
+const { getDocId } = require('../../util/docId');
+const { getVideoDuration } = require('../../util/youtubeVideoDuraion');
 
 class LessonController {
     // [GET] /courses/:courseID/sections/:sectionID/lessons/create
@@ -57,7 +59,7 @@ class LessonController {
     // Tối ưu phương thức create
     async create(req, res) {
         try {
-            const { ytbVideoLink, exerciseContent } = req.body;
+            const { ytbVideoLink, exerciseContent, docLink } = req.body;
             const { courseID, sectionID } = req.params;
 
             // Kiểm tra ID hợp lệ
@@ -81,19 +83,24 @@ class LessonController {
                 });
             }
 
+            const ytbVideoID = getYouTubeVideoId(ytbVideoLink);
+
+            const duration = await getVideoDuration(ytbVideoID)
+
+
             const lesson = new Lesson({
                 ...req.body,
                 courseID,
                 sectionID,
-                ytbVideoID: getYouTubeVideoId(ytbVideoLink),
+                ytbVideoID,
+                docID: getDocId(docLink),
                 questions: exerciseContent,
+                duration
             });
 
             // Lưu bài học và lấy khóa học cùng lúc
-            const [savedLesson, course] = await Promise.all([
-                lesson.save(),
-                Course.findById(courseID, 'slug') // Chỉ lấy trường slug
-            ]);
+            await lesson.save();
+            const course = await Course.findById(courseID, 'slug');
 
             res.redirect(`/${course.slug}/lessons`);
         } catch (error) {
@@ -247,15 +254,15 @@ class LessonController {
             // Dựa vào loại bài học, cập nhật dữ liệu tương ứng
             if (lessonType === 'video') {
                 updateData.ytbVideoID = getYouTubeVideoId(ytbVideoLink);
-                updateData.docLink = null;
+                updateData.docID = null;
                 updateData.questions = null;
             } else if (lessonType === 'document') {
                 updateData.ytbVideoID = null;
-                updateData.docLink = docLink ? docLink.trim() : '';
+                updateData.docID = getDocId(docLink);
                 updateData.questions = null;
             } else if (lessonType === 'exercise') {
                 updateData.ytbVideoID = null;
-                updateData.docLink = null;
+                updateData.docID = null;
                 updateData.questions = exerciseContent;
             }
 

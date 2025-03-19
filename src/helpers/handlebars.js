@@ -38,7 +38,7 @@ module.exports = {
             return '<i class="bi bi-play-circle me-2"></i>';
         }
 
-        if (lesson.docLink !== '' && lesson.docLink !== null) {
+        if (lesson.docID !== null) {
             return '<i class="bi bi-file-earmark-text me-1"></i>'
         }
 

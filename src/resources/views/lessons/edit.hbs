@@ -16,7 +16,7 @@
                         </div>
                         <div class="form-check">
                             <input class="form-check-input" type="radio" value="document" id="documentCheck"
-                                name="lessonType" {{#if lesson.docLink}}checked{{/if}}>
+                                name="lessonType" {{#if lesson.docID}}checked{{/if}}>
                             <label class="form-check-label" for="documentCheck">
                                 <i class="bi bi-file-earmark-text me-1"></i>Tài liệu
                             </label>
@@ -45,10 +45,10 @@
                         value="{{#if lesson.ytbVideoID}}https://www.youtube.com/watch?v={{lesson.ytbVideoID}}{{/if}}">
                 </div>
 
-                <div id="documentField" class="mb-3 {{#unless lesson.docLink}}d-none{{/unless}}">
+                <div id="documentField" class="mb-3 {{#unless lesson.docID}}d-none{{/unless}}">
                     <label for="lessonResource" class="form-label">Link Tài liệu</label>
                     <input type="text" class="form-control" id="lessonResource" name="docLink"
-                        value="{{lesson.docLink}}">
+                        value="https://docs.google.com/document/d/{{lesson.docID}}/preview">
                 </div>
 
                 <div id="exerciseField" class="mb-3 {{#unless lesson.questions}}d-none{{/unless}}">
