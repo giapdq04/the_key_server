@@ -34,7 +34,7 @@ app.use(helmet({
             styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
             imgSrc: ["'self'", "data:", "https://img.youtube.com", "https://*.ytimg.com", "https://github.com", "https://avatars.githubusercontent.com"],
             frameSrc: ["'self'", "https://www.youtube.com", "https://youtube.com"],
-            connectSrc: ["'self'", "http://localhost:3000"]
+            connectSrc: ["'self'"]
         }
     },
     xssFilter: true,

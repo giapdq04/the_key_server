@@ -3,6 +3,7 @@ const courseUserCtrl = require('../../app/controllers/api/CourseUserController')
 const router = express.Router()
 
 router.get('/all-courses', courseUserCtrl.getAllCourse)
+router.get('/enrolled-courses/:userID', courseUserCtrl.getUserEnrolledCourses);
 router.get('/course-detail/:slug', courseUserCtrl.showCourseDetail)
 
 router.get('/:slug/:userID', courseUserCtrl.getCourseUser)
