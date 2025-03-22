@@ -178,32 +178,43 @@ class CourseUserController {
         }
     }
 
-        async getUserEnrolledCourses(req, res) {
+    async getUserEnrolledCourses(req, res) {
         try {
             const { userID } = req.params;
-    
+
             // Kiểm tra xem người dùng có tồn tại không
             const user = await User.findById(userID);
             if (!user) {
                 return res.status(404).json({ message: "User not found" });
             }
-    
+
             // Lấy danh sách các khóa học mà người dùng đã đăng ký
             const userProgress = await UserProgress.find({ userID }).populate('courseID', 'title slug ytbVideoId');
-    
+
             // Nếu người dùng chưa đăng ký khóa học nào
             if (!userProgress || userProgress.length === 0) {
                 return res.status(200).json({ message: "No enrolled courses found", courses: [] });
             }
-    
-            // Trích xuất thông tin khóa học từ kết quả
-            const enrolledCourses = userProgress.map(progress => ({
-                courseID: progress.courseID._id,
-                title: progress.courseID.title,
-                slug: progress.courseID.slug,
-                ytbVideoId: progress.courseID.ytbVideoId,
-            }));
-    
+
+            // Trích xuất thông tin khóa học và tính toán tiến độ
+            const enrolledCourses = await Promise.all(
+                userProgress.map(async (progress) => {
+                    const totalLessons = await Lesson.countDocuments({ courseID: progress.courseID._id });
+                    const completedLessons = progress.completedLessons.length;
+                    const progressPercentage = totalLessons > 0
+                        ? Math.round((completedLessons / totalLessons) * 100)
+                        : 0;
+
+                    return {
+                        courseID: progress.courseID._id,
+                        title: progress.courseID.title,
+                        slug: progress.courseID.slug,
+                        ytbVideoId: progress.courseID.ytbVideoId,
+                        progressPercentage
+                    };
+                })
+            );
+
             res.status(200).json(enrolledCourses);
         } catch (error) {
             console.log(error);
