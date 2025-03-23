@@ -22,7 +22,7 @@ class CourseUserController {
             }, {});
 
             // Lấy thông tin khóa học và thêm số lượng đăng ký
-            const courses = await Course.find().select('_id title ytbVideoId slug');
+            const courses = await Course.find().select('_id title thumbnail slug');
 
             const result = courses.map(course => {
                 const courseObj = course.toObject();
