@@ -1,6 +1,6 @@
 // config.js
 const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const {CloudinaryStorage} = require('multer-storage-cloudinary');
 const multer = require('multer');
 
 cloudinary.config({
@@ -16,11 +16,21 @@ const storage = new CloudinaryStorage({
         folder: 'thumbnails', // Thư mục trên Cloudinary (tùy chọn)
         allowedFormats: ['jpg', 'png', 'jpeg', 'gif'], // Các định dạng cho phép (tùy chọn)
         transformation: [
-            { width: 1280, height: 720, crop: 'limit' } // Giới hạn kích thước tối đa là 1280x720
+            {width: 1280, height: 720, crop: 'limit'} // Giới hạn kích thước tối đa là 1280x720
         ]
     },
 });
 
-const upload = multer({ storage });
+const storageSlide = new CloudinaryStorage({
+    cloudinary,
+    params: {
+        folder: 'slides',
+        allowedFormats: ['jpg', 'png', 'jpeg', 'gif']
+    },
+});
 
-module.exports = { upload, cloudinary };
+const upload = multer({storage});
+
+const uploadSlide = multer({storage: storageSlide});
+
+module.exports = {upload, cloudinary, uploadSlide};

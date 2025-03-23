@@ -1,0 +1,268 @@
+<div class="mt-4">
+    <h3>Quản lý Slide</h3>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addSlideModal">
+        <i class="bi bi-plus-circle"></i> Thêm slide mới
+    </button>
+
+    <div class="mt-4">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Tiêu đề</th>
+                    <th scope="col">Hình ảnh</th>
+                    <th scope="col">Đường dẫn</th>
+                    <th scope="col">Thứ tự hiển thị</th>
+                    <th scope="col">Trạng thái</th>
+                    <th scope="col">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each slides}}
+                <tr>
+                    <th scope="row">{{sum @index 1}}</th>
+                    <td>{{this.title}}</td>
+                    <td>
+                        <img src="{{this.imageUrl}}" alt="{{this.title}}" class="img-thumbnail" style="max-width: 100px;">
+                    </td>
+                    <td>{{this.link}}</td>
+                    <td>{{this.order}}</td>
+                    <td>
+                        {{#if this.active}}
+                        <span class="badge bg-success">Hiển thị</span>
+                        {{else}}
+                        <span class="badge bg-secondary">Ẩn</span>
+                        {{/if}}
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-primary edit-slide-btn" data-id="{{this._id}}" 
+                            data-title="{{this.title}}" data-image="{{this.imageUrl}}" 
+                            data-link="{{this.link}}" data-order="{{this.order}}" 
+                            data-active="{{this.active}}" data-bs-toggle="modal" 
+                            data-bs-target="#editSlideModal">
+                            <i class="bi bi-pencil"></i> Sửa
+                        </button>
+                        <button class="btn btn-sm btn-danger" data-id="{{this._id}}" 
+                            data-title="{{this.title}}" data-bs-toggle="modal" 
+                            data-bs-target="#deleteModal">
+                            <i class="bi bi-trash"></i> Xóa
+                        </button>
+                    </td>
+                </tr>
+                {{else}}
+                <tr>
+                    <td colspan="7" class="text-center">Chưa có slide nào.</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Slide Modal -->
+<div class="modal fade" id="addSlideModal" tabindex="-1" aria-labelledby="addSlideModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addSlideModalLabel">Thêm slide mới</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form autocomplete="off" method="post" action="/slides" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="addTitle" class="form-label">Tiêu đề</label>
+                        <input type="text" class="form-control" id="addTitle" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="addImage" class="form-label">Hình ảnh</label>
+                        <input class="form-control" type="file" id="addImage" name="image" accept="image/*" required>
+                        <!-- Hiển thị ảnh preview -->
+                        <div class="mt-2">
+                            <img id="addImagePreview" src="" alt="Ảnh xem trước" style="max-width: 100%; max-height: 200px; display: none;" class="img-thumbnail">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="addLink" class="form-label">Đường dẫn</label>
+                        <input type="text" class="form-control" id="addLink" name="link">
+                    </div>
+                    <div class="mb-3">
+                        <label for="addOrder" class="form-label">Thứ tự hiển thị</label>
+                        <input type="number" class="form-control" id="addOrder" name="order" min="1" value="1" required>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="addActive" name="active" checked>
+                        <label class="form-check-label" for="addActive">Hiển thị slide</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Thêm slide</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Slide Modal -->
+<div class="modal fade" id="editSlideModal" tabindex="-1" aria-labelledby="editSlideModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editSlideModalLabel">Sửa slide</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editSlideForm" autocomplete="off" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="editTitle" class="form-label">Tiêu đề</label>
+                        <input type="text" class="form-control" id="editTitle" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editImage" class="form-label">Hình ảnh</label>
+                        <input class="form-control" type="file" id="editImage" name="image" accept="image/*">
+                        <!-- Hiển thị ảnh hiện tại -->
+                        <div class="mt-2">
+                            <p class="text-muted">Ảnh hiện tại:</p>
+                            <img id="currentImage" src="" alt="Ảnh hiện tại" class="img-thumbnail" style="max-width: 100%; max-height: 200px;">
+                        </div>
+                        <!-- Hiển thị ảnh preview -->
+                        <div class="mt-2">
+                            <p class="text-muted">Ảnh mới (nếu có):</p>
+                            <img id="editImagePreview" src="" alt="Ảnh xem trước" style="max-width: 100%; max-height: 200px; display: none;" class="img-thumbnail">
+                        </div>
+                        <!-- Lưu URL ảnh hiện tại -->
+                        <input type="hidden" id="currentImageUrl" name="currentImageUrl">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editLink" class="form-label">Đường dẫn</label>
+                        <input type="text" class="form-control" id="editLink" name="link">
+                    </div>
+                    <div class="mb-3">
+                        <label for="editOrder" class="form-label">Thứ tự hiển thị</label>
+                        <input type="number" class="form-control" id="editOrder" name="order" min="1" required>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="editActive" name="active">
+                        <label class="form-check-label" for="editActive">Hiển thị slide</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">Xác nhận xóa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc muốn xóa slide "<span id="slideTitleToDelete"></span>"?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">Xóa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden delete form -->
+<form id="deleteForm" method="POST" style="display: none;"></form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Xử lý preview ảnh khi thêm mới
+        document.getElementById('addImage').addEventListener('change', function(event) {
+            const imagePreview = document.getElementById('addImagePreview');
+            const file = event.target.files[0];
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            } else {
+                imagePreview.src = '';
+                imagePreview.style.display = 'none';
+            }
+        });
+        
+        // Xử lý preview ảnh khi chỉnh sửa
+        document.getElementById('editImage').addEventListener('change', function(event) {
+            const imagePreview = document.getElementById('editImagePreview');
+            const file = event.target.files[0];
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            } else {
+                imagePreview.src = '';
+                imagePreview.style.display = 'none';
+            }
+        });
+        
+        // Xử lý xóa slide
+        const deleteModal = document.getElementById('deleteModal');
+        const slideTitleToDelete = document.getElementById('slideTitleToDelete');
+        const deleteForm = document.getElementById('deleteForm');
+        const confirmDelete = document.getElementById('confirmDelete');
+        let slideIdToDelete;
+        
+        deleteModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            slideIdToDelete = button.getAttribute('data-id');
+            const slideTitle = button.getAttribute('data-title');
+            slideTitleToDelete.textContent = slideTitle;
+        });
+        
+        confirmDelete.addEventListener('click', function() {
+            deleteForm.action = `/slides/${slideIdToDelete}?_method=DELETE`;
+            deleteForm.submit();
+        });
+        
+        // Xử lý chỉnh sửa slide
+        const editSlideModal = document.getElementById('editSlideModal');
+        const editSlideForm = document.getElementById('editSlideForm');
+        const currentImage = document.getElementById('currentImage');
+        const currentImageUrl = document.getElementById('currentImageUrl');
+        const editTitle = document.getElementById('editTitle');
+        const editLink = document.getElementById('editLink');
+        const editOrder = document.getElementById('editOrder');
+        const editActive = document.getElementById('editActive');
+        
+        editSlideModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const slideId = button.getAttribute('data-id');
+            const slideTitle = button.getAttribute('data-title');
+            const slideImage = button.getAttribute('data-image');
+            const slideLink = button.getAttribute('data-link');
+            const slideOrder = button.getAttribute('data-order');
+            const slideActive = button.getAttribute('data-active') === 'true';
+            
+            editSlideForm.action = `/slides/${slideId}?_method=PUT`;
+            editTitle.value = slideTitle;
+            currentImage.src = slideImage;
+            currentImageUrl.value = slideImage;
+            editLink.value = slideLink;
+            editOrder.value = slideOrder;
+            editActive.checked = slideActive;
+            
+            // Reset preview ảnh mới
+            document.getElementById('editImagePreview').style.display = 'none';
+        });
+    });
+</script>
