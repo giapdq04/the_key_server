@@ -1,8 +1,9 @@
-const { mongooseToObject, multipleMongooseObject } = require("../../util/mongoose");
 const Course = require("../models/Course");
-const { getYouTubeVideoId } = require("../../util/videoId");
 const Section = require("../models/Section");
 const Lesson = require("../models/Lesson");
+const extractPublicIdFromUrl = require("../../util/extractPublicIdFromUrl");
+const { cloudinary } = require('../../config/cloudinary');
+
 
 class CourseController {
 
@@ -10,9 +11,9 @@ class CourseController {
     async show(req, res) {
         try {
             const { slug } = req.params
-            const course = await Course.findOne({ slug })
+            const course = await Course.findOne({ slug }).lean()
             res.render('courses/show', {
-                course: mongooseToObject(course),
+                course,
                 layout: 'minimal' // Use minimal layout
             })
         } catch (error) {
@@ -29,34 +30,41 @@ class CourseController {
     // [POST] /courses/store
     async store(req, res) {
         try {
-            const { title, description, ytbVideoLink } = req.body
+            const { title, description } = req.body;
 
-            if (ytbVideoLink === '', title === '', description === '') {
+            // Kiểm tra dữ liệu đầu vào
+            if (!title || !description || !req.file) {
                 return res.render('courses/create', {
-                    error: 'Hãy điền đầy đủ thông tin'
-                })
+                    error: 'Hãy điền đầy đủ thông tin và tải lên ảnh thumbnail'
+                });
             }
+
+            // Lấy thông tin file đã được upload lên Cloudinary
+            const thumbnail = req.file.path;
 
             const course = new Course({
                 title: title.trim(),
                 description: description.trim(),
-                ytbVideoId: getYouTubeVideoId(ytbVideoLink)
-            })
-            await course.save()
-            res.redirect('/')
-        } catch (e) {
-            console.log(e)
-        }
+                thumbnail
+            });
 
+            await course.save();
+            res.redirect('/');
+        } catch (e) {
+            console.log(e);
+            res.render('courses/create', {
+                error: 'Đã xảy ra lỗi khi tạo khóa học'
+            });
+        }
     }
 
     // [GET] /courses/stored-courses
     async storedCourse(req, res) {
         try {
             const deletedCourses = await Course.countDocumentsWithDeleted({ deleted: true });
-            const courses = await Course.find()
+            const courses = await Course.find().lean()
 
-            const convertCourses = multipleMongooseObject(courses).map(course => ({
+            const convertCourses = courses.map(course => ({
                 ...course,
                 updatedAt: course.updatedAt.toLocaleString()
             }))
@@ -73,16 +81,8 @@ class CourseController {
     // [GET] /courses/:id/edit
     async edit(req, res) {
         try {
-            let course = await Course.findById(req.params.id)
-
-            let convertCourse = mongooseToObject(course)
-            convertCourse = {
-                ...convertCourse,
-                ytbVideoLink: `https://www.youtube.com/watch?v=${convertCourse.ytbVideoId}`
-            }
-            res.render('courses/edit', {
-                course: convertCourse
-            })
+            let course = await Course.findById(req.params.id).lean()
+            res.render('courses/edit', { course })
         } catch (e) {
             console.log(e)
         }
@@ -91,16 +91,41 @@ class CourseController {
     //[PUT] /courses/:id
     async update(req, res) {
         try {
-            const editedCourse = req.body
+            const { title, description, currentThumbnail } = req.body;
+
+            // Dữ liệu cập nhật
             const formData = {
-                title: editedCourse.title,
-                description: editedCourse.description,
-                ytbVideoId: getYouTubeVideoId(editedCourse.ytbVideoLink)
+                title: title.trim(),
+                description: description.trim()
+            };
+
+            // Nếu có file ảnh mới được upload, sử dụng đường dẫn mới
+            if (req.file) {
+                formData.thumbnail = req.file.path;
+                // Xóa ảnh cũ từ Cloudinary nếu có
+                if (currentThumbnail) {
+                    // Lấy public_id từ URL của Cloudinary
+                    const publicId = extractPublicIdFromUrl(currentThumbnail);
+
+                    if (publicId) {
+                        // Xóa ảnh cũ bất đồng bộ (không cần đợi kết quả)
+                        cloudinary.uploader.destroy(publicId)
+                            .then(result => console.log('Deleted old thumbnail:', result))
+                            .catch(err => console.error('Error deleting old thumbnail:', err));
+                    }
+                }
+            } else {
+                // Nếu không, giữ nguyên đường dẫn cũ
+                formData.thumbnail = currentThumbnail;
             }
-            await Course.updateOne({ _id: req.params.id }, formData)
-            res.redirect('/courses/stored-courses')
+
+            await Course.updateOne({ _id: req.params.id }, formData);
+            res.redirect('/courses/stored-courses');
         } catch (e) {
-            console.log(e)
+            console.log(e);
+            res.status(500).render('courses/edit', {
+                error: 'Đã xảy ra lỗi khi cập nhật khóa học'
+            });
         }
     }
 
@@ -133,6 +158,24 @@ class CourseController {
         try {
             const courseId = req.params.id;
 
+            // Tìm thông tin khóa học trước khi xóa để lấy URL thumbnail
+            const course = await Course.findOneDeleted({ _id: courseId }).select('thumbnail');
+
+            if (course && course.thumbnail) {
+                // Lấy public_id từ URL của Cloudinary
+                const publicId = extractPublicIdFromUrl(course.thumbnail);
+
+                if (publicId) {
+                    // Xóa ảnh thumbnail từ Cloudinary
+                    try {
+                        const result = await cloudinary.uploader.destroy(publicId);
+                    } catch (cloudinaryError) {
+                        console.error('Error deleting thumbnail from Cloudinary:', cloudinaryError);
+                        // Tiếp tục quá trình xóa khóa học ngay cả khi không thể xóa ảnh
+                    }
+                }
+            }
+
             // Permanently delete all lessons of this course
             await Lesson.deleteMany({ courseID: courseId });
 
@@ -155,9 +198,9 @@ class CourseController {
     // [GET] /courses/trash
     async trashCourse(req, res) {
         try {
-            const deletedCourses = await Course.findWithDeleted({ deleted: true });
+            const deletedCourses = await Course.findWithDeleted({ deleted: true }).lean()
 
-            const convertCourses = multipleMongooseObject(deletedCourses).map(course => ({
+            const convertCourses = deletedCourses.map(course => ({
                 ...course,
                 deletedAt: course.deletedAt.toLocaleString()
             }))

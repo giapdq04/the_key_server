@@ -32,7 +32,13 @@ app.use(helmet({
             defaultSrc: ["'self'"],
             scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://ajax.googleapis.com"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
-            imgSrc: ["'self'", "data:", "https://img.youtube.com", "https://*.ytimg.com", "https://github.com", "https://avatars.githubusercontent.com"],
+            imgSrc: [
+                "'self'", 
+                "data:", 
+                "https://img.youtube.com", 
+                "https://*.ytimg.com", 
+                "https://res.cloudinary.com"
+            ],
             frameSrc: ["'self'", "https://www.youtube.com", "https://youtube.com"],
             connectSrc: ["'self'"]
         }

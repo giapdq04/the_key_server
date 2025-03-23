@@ -6,7 +6,7 @@ const mongooseDelete = require('mongoose-delete')
 const Course = new Schema({
     title: { type: String, required: true },
     description: { type: String, maxLength: 255 },
-    ytbVideoId: { type: String, default: '' },
+    thumbnail: { type: String, default: '' },
     slug: { type: String, slug: 'title', unique: true },
 }, {
     timestamps: true

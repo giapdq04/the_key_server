@@ -1,23 +1,66 @@
 <div class="mt-4">
     <h3>Sửa khóa học</h3>
 
-    <form autocomplete="off" method="post" action="/courses/{{course._id}}?_method=PUT">
+    <form autocomplete="off" method="post" action="/courses/{{course._id}}?_method=PUT" enctype="multipart/form-data">
         <div class="mb-3">
             <label for="title" class="form-label">Tên khóa học</label>
-            <input type="text" class="form-control" value="{{course.title}}" id="title" name="title">
+            <input type="text" class="form-control" value="{{course.title}}" id="title" name="title" required>
         </div>
 
         <div class="mb-3">
-            <label for="ytbVideoLink" class="form-label">Link video giới thiệu</label>
-            <input type="text" class="form-control" value="{{course.ytbVideoLink}}" id="ytbVideoLink"
-                name="ytbVideoLink">
+            <label for="thumbnail" class="form-label">Ảnh thumbnail khóa học</label>
+            <input class="form-control" type="file" name="thumbnail" id="thumbnail" accept="image/*">
+            
+            <!-- Hiển thị ảnh thumbnail hiện tại -->
+            <div class="mt-2">
+                <p class="text-muted">Ảnh hiện tại:</p>
+                <img src="{{course.thumbnail}}" alt="Thumbnail hiện tại" class="img-thumbnail" style="max-width: 300px; max-height: 200px;">
+            </div>
+            
+            <!-- Hiển thị ảnh preview khi chọn ảnh mới -->
+            <div class="mt-2">
+                <p class="text-muted">Ảnh mới (nếu có):</p>
+                <img id="imagePreview" src="" alt="Ảnh xem trước" style="max-width: 300px; max-height: 200px; display: none;" class="img-thumbnail">
+            </div>
+            
+            <!-- Giữ lại đường dẫn ảnh cũ trong trường hợp không upload ảnh mới -->
+            <input type="hidden" name="currentThumbnail" value="{{course.thumbnail}}">
         </div>
 
         <div class="mb-3">
             <label for="description" class="form-label">Mô tả</label>
-            <textarea class="form-control" id="description" name="description">{{course.description}}</textarea>
+            <textarea class="form-control" id="description" name="description" required>{{course.description}}</textarea>
         </div>
 
-        <button type="submit" class="btn btn-primary">Lưu</button>
+        {{#if error}}
+        <div class="alert alert-danger" role="alert">
+            {{error}}
+        </div>
+        {{/if}}
+
+        <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+        <a href="/courses/stored-courses" class="btn btn-secondary">Hủy</a>
     </form>
 </div>
+
+<!-- Script xử lý hiển thị ảnh preview -->
+<script>
+    document.getElementById('thumbnail').addEventListener('change', function(event) {
+        const imagePreview = document.getElementById('imagePreview');
+        const file = event.target.files[0];
+        
+        if (file) {
+            // Hiển thị ảnh preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        } else {
+            // Ẩn ảnh preview nếu không có file được chọn
+            imagePreview.src = '';
+            imagePreview.style.display = 'none';
+        }
+    });
+</script>
