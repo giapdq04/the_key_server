@@ -20,6 +20,14 @@ const route = (app) => {
     app.use('/', requireLogin, sectionRouter)
     app.use('/', requireLogin, courseDetail)
     app.use('/', requireLogin, siteRouter)
+    
+    // Catch-all route - phải đặt ở cuối cùng
+    app.use('*', requireLogin, (req, res) => {
+        res.status(404).render('404', {
+            title: 'Không tìm thấy trang',
+            layout: 'main'
+        });
+    });
 }
 
 module.exports = route

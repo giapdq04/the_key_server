@@ -48,10 +48,6 @@ class SlideController {
         }
     }
 
-    async show(req, res) {
-        res.send('SlideController')
-    }
-
     async update(req, res) {
         try {
             const { title, link, order, active, currentImageUrl } = req.body;
