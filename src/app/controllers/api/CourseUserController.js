@@ -208,7 +208,7 @@ class CourseUserController {
                         courseID: progress.courseID._id,
                         title: progress.courseID.title,
                         slug: progress.courseID.slug,
-                        ytbVideoId: progress.courseID.ytbVideoId,
+                        thumbnail: progress.courseID.thumbnail,
                         progressPercentage
                     };
                 })
