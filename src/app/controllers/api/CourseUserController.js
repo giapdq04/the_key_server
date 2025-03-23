@@ -3,7 +3,6 @@ const User = require("../../models/User")
 const Section = require("../../models/Section")
 const Lesson = require("../../models/Lesson")
 const UserProgress = require("../../models/UserProgress")
-const { mongooseToObject } = require("../../../util/mongoose")
 
 class CourseUserController {
 
@@ -189,7 +188,7 @@ class CourseUserController {
             }
 
             // Lấy danh sách các khóa học mà người dùng đã đăng ký
-            const userProgress = await UserProgress.find({ userID }).populate('courseID', 'title slug ytbVideoId');
+            const userProgress = await UserProgress.find({ userID }).populate('courseID', 'title slug thumbnail');
 
             // Nếu người dùng chưa đăng ký khóa học nào
             if (!userProgress || userProgress.length === 0) {
