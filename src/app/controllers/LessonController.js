@@ -253,17 +253,23 @@ class LessonController {
 
             // Dựa vào loại bài học, cập nhật dữ liệu tương ứng
             if (lessonType === 'video') {
-                updateData.ytbVideoID = getYouTubeVideoId(ytbVideoLink);
+                const ytbVideoID = getYouTubeVideoId(ytbVideoLink);
+                updateData.ytbVideoID = ytbVideoID;
                 updateData.docID = null;
                 updateData.questions = null;
+                
+                // Thêm vào: Cập nhật duration khi chuyển sang loại video
+                updateData.duration = await getVideoDuration(ytbVideoID);
             } else if (lessonType === 'document') {
                 updateData.ytbVideoID = null;
                 updateData.docID = getDocId(docLink);
                 updateData.questions = null;
+                updateData.duration = 0; // Đặt duration = 0 cho tài liệu
             } else if (lessonType === 'exercise') {
                 updateData.ytbVideoID = null;
                 updateData.docID = null;
                 updateData.questions = exerciseContent;
+                updateData.duration = 0; // Đặt duration = 0 cho bài tập
             }
 
             // Cập nhật bài học
