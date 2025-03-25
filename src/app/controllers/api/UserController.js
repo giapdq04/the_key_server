@@ -4,7 +4,7 @@ class UserController {
 
     async getUserInfo(req, res) {
         try {
-            const user = await User.findById(req.user.userId);
+            const user = await User.findById(req.user.userId).select('-__v -updatedAt -deleted')
             if (!user) {
                 return res.status(404).json({ message: "User not found" });
             }
