@@ -16,7 +16,9 @@ const storage = new CloudinaryStorage({
         folder: 'thumbnails', // Thư mục trên Cloudinary (tùy chọn)
         allowedFormats: ['jpg', 'png', 'jpeg', 'gif'], // Các định dạng cho phép (tùy chọn)
         transformation: [
-            { width: 1280, height: 720, crop: 'limit' } // Giới hạn kích thước tối đa là 1280x720
+            { width: 1280, height: 720, crop: 'limit' }, // Giới hạn kích thước tối đa là 1280x720
+            { quality: "auto:best" }, // Tự động điều chỉnh chất lượng
+            { fetch_format: "webp" } // Chuyển đổi định dạng sang webp
         ]
     },
 });
@@ -27,7 +29,9 @@ const storageSlide = new CloudinaryStorage({
         folder: 'slides',
         allowedFormats: ['jpg', 'png', 'jpeg', 'gif'],
         transformation: [
-            { width: 1776, height: 270, crop: 'limit' }
+            { width: 1776, height: 270, crop: 'limit' },
+            { quality: "auto:best" },
+            { fetch_format: "webp" } // Chuyển đổi định dạng sang webp
         ]
     },
 });
