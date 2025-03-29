@@ -25,7 +25,10 @@ const storageSlide = new CloudinaryStorage({
     cloudinary,
     params: {
         folder: 'slides',
-        allowedFormats: ['jpg', 'png', 'jpeg', 'gif']
+        allowedFormats: ['jpg', 'png', 'jpeg', 'gif'],
+        transformation: [
+            { width: 1776, height: 270, crop: 'limit' }
+        ]
     },
 });
 
