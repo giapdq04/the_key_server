@@ -20,7 +20,7 @@ db.connect()
 
 // Thêm middleware CORS
 app.use(cors({
-    origin: 'http://localhost:3000', // Chỉ cho phép từ nguồn này truy cập API của bạn
+    origin: process.env.WEB_CLIENT_URL, // Chỉ cho phép từ nguồn này truy cập API của bạn
     credentials: true, // Cho phép gửi cookies qua CORS
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS']
 }));
