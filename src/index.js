@@ -1,16 +1,20 @@
-require('dotenv').config();
+require('dotenv').config({ path: '.env' })
+const path = require("path");
+
+const environment = process.env.NODE_ENV;
+const envPath = path.resolve(process.cwd(), `.env.${environment}`);
+require('dotenv').config({ path: envPath });
 
 const express = require('express')
 const morgan = require('morgan')
 const session = require('express-session')
 const { engine } = require('express-handlebars');
-const path = require("path");
 const methodOverride = require('method-override')
 const helmet = require('helmet')
 const cors = require('cors') // Thêm dòng này
 const hbsHelpers = require('./helpers/handlebars');
 const app = express()
-const port = 8080
+const port = process.env.PORT || 8080
 
 const route = require('./routes')
 const db = require('./config/db')

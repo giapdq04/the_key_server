@@ -2,3 +2,5 @@ node_modules/
 .idea/
 src/public/css
 .env
+.env.development
+.env.production
