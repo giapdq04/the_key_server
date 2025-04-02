@@ -6,10 +6,11 @@ module.exports = {
     },
 
     concat: function (...args) {
-        args.pop(); // Remove handlebars options object
+        args.pop();
         return args.join('');
     },
 
+    // so sánh 2 giá trị bằng nhau
     eq: function (a, b) {
         return a === b;
     },
@@ -26,6 +27,7 @@ module.exports = {
         return Array.prototype.slice.call(arguments, 0, -1).some(Boolean);
     },
 
+    // Chuyển đổi định dạng ngày tháng
     formatDate: function (date) {
         return new Date(date).toLocaleDateString('vi-VN', {
             day: '2-digit', month: '2-digit', year: 'numeric',

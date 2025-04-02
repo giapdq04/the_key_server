@@ -1,0 +1,145 @@
+<div class="mt-4">
+    <h3>Danh sách người dùng</h3>
+
+    <div class="mt-4">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Tên người dùng</th>
+                    <th scope="col">Ảnh đại diện</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Đăng nhập lần cuối</th>
+                    <th scope="col">Trạng thái</th>
+                    <th scope="col">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each users}}
+                <tr>
+                    <th scope="row">{{sum @index 1}}</th>
+                    <td>{{this.username}}</td>
+                    <td>
+                        <img src="{{this.avatar}}" alt="{{this.username}}" class="img-thumbnail"
+                            style="max-width: 50px;">
+                    </td>
+                    <td>{{this.email}}</td>
+                    <td>{{formatDate this.lastLogin}}</td>
+                    <td>
+                        {{#if (eq this.status 'active')}}
+                        <span class="badge bg-success">Hoạt động</span>
+                        {{else if (eq this.status 'inactive')}}
+                        <span class="badge bg-secondary">Không hoạt động</span>
+                        {{else if (eq this.status 'banned')}}
+                        <span class="badge bg-danger">Bị khóa</span>
+                        {{else}}
+                        <span class="badge bg-warning">Không xác định</span>
+                        {{/if}}
+                    </td>
+                    <td>
+                        {{#if (eq this.status 'banned')}}
+                        <button class="btn btn-sm btn-warning" data-id="{{this._id}}" data-username="{{this.username}}"
+                            data-bs-toggle="modal" data-bs-target="#banModal">
+                            <i class="bi bi-unlock"></i> Mở chặn
+                        </button>
+                        {{else}}
+                        <button class="btn btn-sm btn-danger" data-id="{{this._id}}" data-username="{{this.username}}"
+                            data-bs-toggle="modal" data-bs-target="#banModal">
+                            <i class="bi bi-lock"></i> Chặn
+                        </button>
+                        {{/if}}
+
+                    </td>
+                </tr>
+                {{else}}
+                <tr>
+                    <td colspan="7" class="text-center">Chưa có người dùng nào.</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Ban/Unban Confirmation Modal -->
+<div class="modal fade" id="banModal" tabindex="-1" aria-labelledby="banModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="banModalLabel">Xác nhận</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="modalMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-danger" id="confirmAction">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden ban form -->
+<form id="userActionForm" method="POST" style="display: none;"></form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Xử lý chặn/mở chặn người dùng
+        const banModal = document.getElementById('banModal');
+        const modalMessage = document.getElementById('modalMessage');
+        const userActionForm = document.getElementById('userActionForm');
+        const confirmAction = document.getElementById('confirmAction');
+        const banModalLabel = document.getElementById('banModalLabel');
+        let userIdToAction;
+        let actionType; // 'ban' hoặc 'unban'
+
+        banModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            userIdToAction = button.getAttribute('data-id');
+            const username = button.getAttribute('data-username');
+            
+            // Xác định hành động dựa trên trạng thái hiện tại của người dùng
+            actionType = button.querySelector('i').classList.contains('bi-lock') ? 'ban' : 'unban';
+            
+            // Cập nhật UI của modal tương ứng
+            if (actionType === 'ban') {
+                banModalLabel.textContent = 'Xác nhận chặn';
+                modalMessage.textContent = `Bạn có chắc muốn chặn người dùng "${username}"?`;
+                confirmAction.textContent = 'Chặn';
+                confirmAction.className = 'btn btn-danger';
+            } else {
+                banModalLabel.textContent = 'Xác nhận mở chặn';
+                modalMessage.textContent = `Bạn có chắc muốn mở chặn cho người dùng "${username}"?`;
+                confirmAction.textContent = 'Mở chặn';
+                confirmAction.className = 'btn btn-warning';
+            }
+        });
+
+        confirmAction.addEventListener('click', function () {
+            userActionForm.action = `/users/${userIdToAction}?_method=PATCH`;
+            
+            // Xóa các input cũ nếu có
+            userActionForm.innerHTML = '';
+
+            // Thêm thông tin vào body
+            const statusInput = document.createElement('input');
+            statusInput.type = 'hidden';
+            statusInput.name = 'status';
+            statusInput.value = actionType === 'ban' ? 'banned' : 'inactive';
+            
+            userActionForm.appendChild(statusInput);
+            
+            // Nếu là chặn, thêm lý do
+            if (actionType === 'ban') {
+                const reasonInput = document.createElement('input');
+                reasonInput.type = 'hidden';
+                reasonInput.name = 'banReason';
+                reasonInput.value = 'Vi phạm quy định';
+                userActionForm.appendChild(reasonInput);
+            }
+            
+            userActionForm.submit();
+        });
+    });
+</script>
