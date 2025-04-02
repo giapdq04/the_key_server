@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const EmailService = require("../../services/EmailService");
 
 class UserController {
 
@@ -22,14 +23,27 @@ class UserController {
 
             const updatedUser = await User
                 .findByIdAndUpdate(userId, { status }, { new: true })
-                .select('_id')
+                .select('_id email username')
                 .lean();
-                            
+
             if (!updatedUser) {
                 return res.status(404).json({
                     success: false,
                     message: 'User not found'
                 });
+            }
+
+            // Gửi email thông báo nếu status thay đổi
+            try {
+
+                if (status === 'banned') {
+                    await EmailService.sendBanNotification(updatedUser, banReason);
+                } else {
+                    await EmailService.sendUnbanNotification(updatedUser);
+                }
+            } catch (emailError) {
+                console.error('Error sending email:', emailError);
+                // Không fail request chính nếu gửi email thất bại
             }
 
             res.redirect('/users');
