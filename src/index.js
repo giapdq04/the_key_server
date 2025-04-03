@@ -6,7 +6,7 @@ const envPath = path.resolve(process.cwd(), `.env.${environment}`);
 require('dotenv').config({ path: envPath });
 
 const express = require('express')
-const morgan = require('morgan')
+// const morgan = require('morgan')
 const session = require('express-session')
 const { engine } = require('express-handlebars');
 const methodOverride = require('method-override')

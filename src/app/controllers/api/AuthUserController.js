@@ -5,10 +5,14 @@ class AuthUserController {
     async loginWithGoogle(req, res) {
         const { username, avatar, email } = req.body;
 
-        let user = await User.findOne({ email });
+        let user = await User.findOne({ email }).select("_id status")
 
         if (!user) {
             user = await User.create({ username, avatar, email });
+        }
+
+        if (user.status === "banned") {
+            return res.status(403).json({ message: "Your account has been banned" });
         }
 
         // Tạo access token và refresh token
@@ -22,10 +26,6 @@ class AuthUserController {
             userID: user._id,
         });
     }
-
-
-
-
 }
 
 module.exports = new AuthUserController();
