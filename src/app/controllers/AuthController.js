@@ -1,4 +1,4 @@
-const { multipleMongooseObject, mongooseToObject } = require("../../util/mongoose");
+const bcrypt = require('bcrypt');
 const Admin = require("../models/Admin");
 
 class AuthController {
@@ -13,13 +13,22 @@ class AuthController {
             const { admin_name, password } = req.body;
 
             // Use lean() to get plain JavaScript object instead of Mongoose Document
-            const user = await Admin.findOne({
-                admin_name: admin_name.trim(),
-                password
-            }).lean();
+            const user = await Admin.findOne({ admin_name: admin_name.trim() }).lean();
 
-            if (user) {
-                req.session.user = user;
+            if (!user) {
+                return res.render('login', {
+                    layout: false,
+                    error: 'Tên đăng nhập hoặc mật khẩu không đúng'
+                });
+            }
+
+            const passwordMatch = await bcrypt.compare(password, user.hashedPassword);
+
+            if (passwordMatch) {
+                // Không lưu mật khẩu vào session
+                const { hashedPassword, ...userWithoutPassword } = user;
+                req.session.user = userWithoutPassword;
+
                 const redirectUrl = req.session.returnTo || '/';
                 delete req.session.returnTo;
                 return res.redirect(redirectUrl);
@@ -61,7 +70,15 @@ class AuthController {
                 });
             }
 
-            const newAdmin = new Admin({ admin_name: admin_name.trim(), password, power });
+            // Hash mật khẩu
+            const saltRounds = parseInt(process.env.SALT_ROUNDS) || 30;
+            const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+            const newAdmin = new Admin({
+                admin_name: admin_name.trim(),
+                hashedPassword,
+                power
+            });
             await newAdmin.save();
 
             res.status(201).json({
@@ -139,9 +156,13 @@ class AuthController {
                 });
             }
 
+            // Hash mật khẩu
+            const saltRounds = parseInt(process.env.SALT_ROUNDS) || 30;
+            const hashedPassword = await bcrypt.hash(password, saltRounds);
+
             const newAdmin = new Admin({
                 admin_name: admin_name.trim(),
-                password,
+                hashedPassword,
                 power: powerInt
             });
 
