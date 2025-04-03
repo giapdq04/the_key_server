@@ -1,19 +1,31 @@
 const User = require('../app/models/User');
 
+// Khi người dùng đăng nhập, cập nhật trạng thái thành active
+function emitActiveUserCount(io) {
+    try {
+        User.countDocuments({ status: 'active' })
+            .then(count => {
+                io.emit('active-users-count', { count });
+            })
+            .catch(error => {
+                console.error('Error fetching active user count:', error);
+            });
+    } catch (error) {
+        console.error('Unexpected error in emitActiveUserCount:', error);
+    }
+}
+
 function configureSocket(io) {
     // Lưu trữ mapping giữa userId và socketId
     const userSocketMap = new Map();
     const socketUserMap = new Map();
 
     io.on('connection', async (socket) => {
-        console.log('User connected:', socket.id);
 
+        emitActiveUserCount(io);
         // Xử lý khi người dùng đăng nhập
         socket.on('user:login', async (userId) => {
             try {
-                console.log('-------------------');
-
-                console.log('user:login', userId);
 
                 // Cập nhật trạng thái người dùng thành active
                 await User.findByIdAndUpdate(userId, { status: 'active', lastLogin: new Date() }, { new: true });
@@ -21,6 +33,8 @@ function configureSocket(io) {
                 // Lưu mapping
                 userSocketMap.set(userId, socket.id);
                 socketUserMap.set(socket.id, userId);
+
+                emitActiveUserCount(io);
             } catch (error) {
                 console.error('Error updating user status:', error);
             }
@@ -39,6 +53,9 @@ function configureSocket(io) {
                     // Xóa mapping
                     userSocketMap.delete(userId);
                     socketUserMap.delete(socket.id);
+
+                    emitActiveUserCount(io);
+
 
                     console.log('Cập nhật trạng thái người dùng thành inactive:', userId);
 

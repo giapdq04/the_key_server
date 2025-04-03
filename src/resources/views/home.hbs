@@ -1,6 +1,16 @@
 <div class="mt-4">
-    <div class="row">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3>Danh sách khóa học</h3>
+        <div class="card text-white bg-success" style="max-width: 18rem;">
+            <div class="card-header">Thống kê hệ thống</div>
+            <div class="card-body">
+                <h5 class="card-title">Người dùng đang hoạt động</h5>
+                <p id="active-users-count" class="card-text display-4 text-center">{{activeUsers}}</p>
+            </div>
+        </div>
+    </div>
 
+    <div class="row">
         {{#each courses}}
         <div class="col-sm-6 col-lg-4">
             <div class="card card-course-item" style="width: 18rem;">
@@ -18,6 +28,17 @@
             </div>
         </div>
         {{/each}}
-
     </div>
 </div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const socket = io();
+        const activeUsersElement = document.getElementById('active-users-count');
+        
+        socket.on('active-users-count', function(data) {
+            activeUsersElement.textContent = data.count;
+        });
+    });
+</script>
