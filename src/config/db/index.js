@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 async function connect() {
     try {
-        await mongoose.connect(process.env.DATABASE, {
+        await mongoose.connect(process.env.MONGO_URI, {
             serverSelectionTimeoutMS: 20000, // Tăng thời gian chờ lên 20 giây
             socketTimeoutMS: 45000, // Tăng thời gian chờ socket
         });

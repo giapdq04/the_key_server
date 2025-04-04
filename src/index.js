@@ -13,6 +13,7 @@ const methodOverride = require('method-override')
 const helmet = require('helmet')
 const cors = require('cors')
 const hbsHelpers = require('./helpers/handlebars');
+const MongoStore = require('connect-mongo');
 const app = express()
 const port = process.env.PORT || 8080
 
@@ -50,7 +51,7 @@ app.use(helmet({
     contentSecurityPolicy: {
         directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://ajax.googleapis.com"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://ajax.googleapis.com","https://static.cloudflareinsights.com"],
             styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
             imgSrc: [
                 "'self'", 
@@ -73,9 +74,15 @@ app.use(session({
     secret: process.env.SESSION_SECRET || 'your_secret_key',
     resave: false,
     saveUninitialized: false,
+    store: MongoStore.create({
+        mongoUrl: process.env.MONGO_URI, // Sử dụng chuỗi kết nối MongoDB đang có
+        ttl: 24 * 60 * 60, // Thời gian sống của phiên (giây)
+        autoRemove: 'native',
+        collectionName: 'sessions'
+    }),
     cookie: {
         secure: process.env.NODE_ENV === 'production',
-        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        maxAge: 24 * 60 * 60 * 1000, // 24 giờ
         httpOnly: true,
         sameSite: 'lax'
     }
