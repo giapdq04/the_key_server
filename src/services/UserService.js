@@ -4,8 +4,7 @@ class UserService {
 
     async countActiveUsers() {
         try {
-            const activeCount = await User.countDocuments({ status: 'active' });
-            return activeCount;
+            return await User.countDocuments({status: 'active'});
         } catch (error) {
             console.error('Error counting active users:', error);
             return 0;

@@ -1,15 +1,11 @@
 const User = require('../app/models/User');
+const UserService = require('../services/UserService');
 
 // Khi người dùng đăng nhập, cập nhật trạng thái thành active
-function emitActiveUserCount(io) {
+async function emitActiveUserCount(io) {
     try {
-        User.countDocuments({ status: 'active' })
-            .then(count => {
-                io.emit('active-users-count', { count });
-            })
-            .catch(error => {
-                console.error('Error fetching active user count:', error);
-            });
+        const count = await UserService.countActiveUsers()
+        io.emit('active-users-count', { count });
     } catch (error) {
         console.error('Unexpected error in emitActiveUserCount:', error);
     }
@@ -22,7 +18,6 @@ function configureSocket(io) {
 
     io.on('connection', async (socket) => {
 
-        emitActiveUserCount(io);
         // Xử lý khi người dùng đăng nhập
         socket.on('user:login', async (userId) => {
             try {
