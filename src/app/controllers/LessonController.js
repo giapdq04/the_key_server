@@ -6,6 +6,8 @@ const { getYouTubeVideoId } = require('../../util/videoId');
 const mongoose = require('mongoose');
 const { getDocId } = require('../../util/docId');
 const { getVideoDuration } = require('../../util/youtubeVideoDuraion');
+const fs = require("node:fs");
+const csv = require("csv-parser");
 
 class LessonController {
     // [GET] /courses/:courseID/sections/:sectionID/lessons/create
@@ -56,19 +58,10 @@ class LessonController {
         }
     }
 
-    // Tối ưu phương thức create
     async create(req, res) {
         try {
             const { ytbVideoLink, exerciseContent, docLink } = req.body;
             const { courseID, sectionID } = req.params;
-
-            // Kiểm tra ID hợp lệ
-            if (!mongoose.Types.ObjectId.isValid(courseID) || !mongoose.Types.ObjectId.isValid(sectionID)) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'ID không hợp lệ'
-                });
-            }
 
             // Kiểm tra course và section tồn tại
             const [courseExists, sectionExists] = await Promise.all([
@@ -84,28 +77,38 @@ class LessonController {
             }
 
             const ytbVideoID = getYouTubeVideoId(ytbVideoLink);
+            const duration = await getVideoDuration(ytbVideoID);
 
-            const duration = await getVideoDuration(ytbVideoID)
+            // Xử lý dữ liệu câu hỏi (từ CSV hoặc form)
+            let questions = exerciseContent;
+            
+            // Trường hợp upload CSV
+            if (exerciseContent === undefined && req.file) {
+                try {
+                    questions = JSON.stringify(await processCSVFile(req.file.path));
+                } catch (err) {
+                    return res.status(500).json({ error: 'Lỗi khi đọc file CSV' });
+                }
+            }
 
-
+            // Tạo và lưu bài học
             const lesson = new Lesson({
                 ...req.body,
                 courseID,
                 sectionID,
                 ytbVideoID,
                 docID: getDocId(docLink),
-                questions: exerciseContent,
+                questions,
                 duration
             });
 
-            // Lưu bài học và lấy khóa học cùng lúc
             await lesson.save();
             const course = await Course.findById(courseID, 'slug');
-
-            res.redirect(`/${course.slug}/lessons`);
+            return res.redirect(`/${course.slug}/lessons`);
+            
         } catch (error) {
             console.log(error);
-            res.status(500).json({
+            return res.status(500).json({
                 success: false,
                 message: 'Internal server error'
             });
@@ -257,7 +260,7 @@ class LessonController {
                 updateData.ytbVideoID = ytbVideoID;
                 updateData.docID = null;
                 updateData.questions = null;
-                
+
                 // Thêm vào: Cập nhật duration khi chuyển sang loại video
                 updateData.duration = await getVideoDuration(ytbVideoID);
             } else if (lessonType === 'document') {
@@ -287,6 +290,40 @@ class LessonController {
             });
         }
     }
+}
+
+// Hàm xử lý file CSV (thêm bên ngoài class)
+function processCSVFile(filePath) {
+    return new Promise((resolve, reject) => {
+        const results = [];
+        const convertAnswer = {
+            "Đáp án 1": 0, "Đáp án 2": 1, "Đáp án 3": 2, "Đáp án 4": 3
+        };
+
+        fs.createReadStream(filePath)
+            .pipe(csv())
+            .on('data', (data) => {
+                results.push({
+                    question: data['Câu hỏi'],
+                    options: [
+                        data['Đáp án 1'],
+                        data['Đáp án 2'],
+                        data['Đáp án 3'],
+                        data['Đáp án 4']
+                    ],
+                    correctAnswer: convertAnswer[data['Đáp án đúng']]
+                });
+            })
+            .on('end', () => {
+                try {
+                    fs.unlinkSync(filePath);
+                } catch (err) {
+                    console.error('Error deleting file:', err);
+                }
+                resolve(results);
+            })
+            .on('error', reject);
+    });
 }
 
 module.exports = new LessonController();

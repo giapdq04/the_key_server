@@ -2,7 +2,8 @@
     <div class="row">
         <div class="col-md-8 mx-auto">
             <h3 class="mb-4">Thêm bài học mới</h3>
-            <form autocomplete="off" method="POST" action="/courses/{{course._id}}/sections/{{section._id}}/lessons">
+            <form autocomplete="off" method="POST" action="/courses/{{course._id}}/sections/{{section._id}}/lessons"
+                enctype="multipart/form-data">
                 <!-- Lesson type selection -->
                 <div class="mb-3">
                     <label class="form-label">Loại bài học</label>
@@ -50,56 +51,106 @@
 
                 <div id="exerciseField" class="mb-3 d-none">
                     <label class="form-label">Câu hỏi trắc nghiệm</label>
-                    <div id="questions-container">
-                        <!-- Mẫu câu hỏi đầu tiên -->
-                        <div class="question-item border rounded p-3 mb-3">
-                            <div class="mb-2">
-                                <label class="form-label">Câu hỏi</label>
-                                <input type="text" class="form-control" name="questions[]" placeholder="Nhập câu hỏi">
-                            </div>
-                            <div class="mb-2">
-                                <label class="form-label">Các đáp án</label>
-                                <div class="option-container">
-                                    <div class="d-flex mb-2 align-items-center">
-                                        <div class="form-check me-2">
-                                            <input class="form-check-input" type="radio" name="correct_answer_0"
-                                                value="0" checked>
+
+                    <div class="mb-3">
+                        <div class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="exerciseInputType" id="inputTypeManual"
+                                value="manual" checked>
+                            <label class="btn btn-outline-primary" for="inputTypeManual">Nhập thủ công</label>
+
+                            <input type="radio" class="btn-check" name="exerciseInputType" id="inputTypeCsv"
+                                value="csv">
+                            <label class="btn btn-outline-primary" for="inputTypeCsv">Nhập từ file CSV</label>
+                        </div>
+                    </div>
+
+                    <div id="manualInputSection">
+                        <div id="questions-container">
+                            <!-- Mẫu câu hỏi đầu tiên -->
+                            <div class="question-item border rounded p-3 mb-3">
+                                <div class="mb-2">
+                                    <label class="form-label">Câu hỏi</label>
+                                    <input type="text" class="form-control" name="questions[]"
+                                        placeholder="Nhập câu hỏi">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Các đáp án</label>
+                                    <div class="option-container">
+                                        <div class="d-flex mb-2 align-items-center">
+                                            <div class="form-check me-2">
+                                                <input class="form-check-input" type="radio" name="correct_answer_0"
+                                                    value="0" checked>
+                                            </div>
+                                            <input type="text" class="form-control" name="options_0[]"
+                                                placeholder="Đáp án 1">
                                         </div>
-                                        <input type="text" class="form-control" name="options_0[]"
-                                            placeholder="Đáp án 1">
-                                    </div>
-                                    <div class="d-flex mb-2 align-items-center">
-                                        <div class="form-check me-2">
-                                            <input class="form-check-input" type="radio" name="correct_answer_0"
-                                                value="1">
+                                        <div class="d-flex mb-2 align-items-center">
+                                            <div class="form-check me-2">
+                                                <input class="form-check-input" type="radio" name="correct_answer_0"
+                                                    value="1">
+                                            </div>
+                                            <input type="text" class="form-control" name="options_0[]"
+                                                placeholder="Đáp án 2">
                                         </div>
-                                        <input type="text" class="form-control" name="options_0[]"
-                                            placeholder="Đáp án 2">
-                                    </div>
-                                    <div class="d-flex mb-2 align-items-center">
-                                        <div class="form-check me-2">
-                                            <input class="form-check-input" type="radio" name="correct_answer_0"
-                                                value="2">
+                                        <div class="d-flex mb-2 align-items-center">
+                                            <div class="form-check me-2">
+                                                <input class="form-check-input" type="radio" name="correct_answer_0"
+                                                    value="2">
+                                            </div>
+                                            <input type="text" class="form-control" name="options_0[]"
+                                                placeholder="Đáp án 3">
                                         </div>
-                                        <input type="text" class="form-control" name="options_0[]"
-                                            placeholder="Đáp án 3">
-                                    </div>
-                                    <div class="d-flex mb-2 align-items-center">
-                                        <div class="form-check me-2">
-                                            <input class="form-check-input" type="radio" name="correct_answer_0"
-                                                value="3">
+                                        <div class="d-flex mb-2 align-items-center">
+                                            <div class="form-check me-2">
+                                                <input class="form-check-input" type="radio" name="correct_answer_0"
+                                                    value="3">
+                                            </div>
+                                            <input type="text" class="form-control" name="options_0[]"
+                                                placeholder="Đáp án 4">
                                         </div>
-                                        <input type="text" class="form-control" name="options_0[]"
-                                            placeholder="Đáp án 4">
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+                        <button type="button" class="btn btn-outline-primary mt-2" id="add-question-btn">
+                            <i class="bi bi-plus-circle"></i> Thêm câu hỏi
+                        </button>
                     </div>
 
-                    <button type="button" class="btn btn-outline-primary mt-2" id="add-question-btn">
-                        <i class="bi bi-plus-circle"></i> Thêm câu hỏi
-                    </button>
+                    <div id="csvInputSection" class="d-none">
+                        <div class="mb-3">
+                            <label for="csvFile" class="form-label">Tải lên file CSV</label>
+                            <input class="form-control" type="file" id="csvFile" name="csvFile" accept=".csv">
+                            <div class="form-text mt-2">
+                                File CSV cần có định dạng: Câu hỏi, Đáp án 1, Đáp án 2, Đáp án 3, Đáp án 4, Đáp án đúng
+                                (0-3)
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-outline-primary" id="parseCsvBtn">
+                                <i class="bi bi-check-circle"></i> Xử lý file CSV
+                            </button>
+                        </div>
+                        <div id="csvPreview" class="mt-3 d-none">
+                            <h5>Xem trước câu hỏi từ CSV</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-sm" id="csvPreviewTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Câu hỏi</th>
+                                            <th>Đáp án 1</th>
+                                            <th>Đáp án 2</th>
+                                            <th>Đáp án 3</th>
+                                            <th>Đáp án 4</th>
+                                            <th>Đáp án đúng</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="mt-4">
@@ -117,11 +168,20 @@
         const videoField = document.getElementById('videoField');
         const documentField = document.getElementById('documentField');
         const exerciseField = document.getElementById('exerciseField');
+        const manualInputSection = document.getElementById('manualInputSection');
+        const csvInputSection = document.getElementById('csvInputSection');
+        const exerciseInputTypes = document.getElementsByName('exerciseInputType');
+        const inputTypeManual = document.getElementById('inputTypeManual');
 
         function toggleFields(selectedType) {
             videoField.classList.toggle('d-none', selectedType !== 'video');
             documentField.classList.toggle('d-none', selectedType !== 'document');
             exerciseField.classList.toggle('d-none', selectedType !== 'exercise');
+        }
+
+        function toggleExerciseInputType(selectedType) {
+            manualInputSection.classList.toggle('d-none', selectedType !== 'manual');
+            csvInputSection.classList.toggle('d-none', selectedType !== 'csv');
         }
 
         lessonTypes.forEach(radio => {
@@ -130,7 +190,14 @@
             });
         });
 
+        exerciseInputTypes.forEach(radio => {
+            radio.addEventListener('change', function () {
+                toggleExerciseInputType(this.value);
+            });
+        });
+
         toggleFields('video');
+        toggleExerciseInputType('manual');
 
         // Xử lý thêm câu hỏi mới
         const addQuestionBtn = document.getElementById('add-question-btn');
@@ -194,6 +261,44 @@
             });
         });
 
+        // Xử lý file CSV
+        const parseCsvBtn = document.getElementById('parseCsvBtn');
+        const csvFileInput = document.getElementById('csvFile');
+        const csvPreview = document.getElementById('csvPreview');
+        const csvPreviewTableBody = document.getElementById('csvPreviewTable').querySelector('tbody');
+
+        parseCsvBtn.addEventListener('click', function () {
+            const file = csvFileInput.files[0];
+            if (!file) {
+                alert('Vui lòng chọn file CSV trước khi xử lý.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                const csvData = event.target.result;
+                const rows = csvData.split('\n').map(row => row.split(','));
+                rows.shift()
+
+                csvPreviewTableBody.innerHTML = '';
+                rows.forEach(row => {
+                    console.log("row: ", row);
+                    if (row.length === 6) {
+                        const tr = document.createElement('tr');
+                        row.forEach(cell => {
+                            const td = document.createElement('td');
+                            td.textContent = cell.trim();
+                            tr.appendChild(td);
+                        });
+                        csvPreviewTableBody.appendChild(tr);
+                    }
+                });
+
+                csvPreview.classList.remove('d-none');
+            };
+            reader.readAsText(file);
+        });
+
         // Thêm một hidden field để lưu dữ liệu dưới dạng JSON khi submit form
         document.querySelector('form').addEventListener('submit', function (e) {
             if (!document.getElementById('videoCheck').checked &&
@@ -203,30 +308,33 @@
                 e.preventDefault();
 
                 const quizData = [];
-                const questionItems = document.querySelectorAll('.question-item');
+                if (inputTypeManual.checked) {
+                    const questionItems = document.querySelectorAll('.question-item');
 
-                questionItems.forEach((item, index) => {
-                    const questionText = item.querySelector('input[name="questions[]"]').value;
-                    const options = Array.from(item.querySelectorAll(`input[name^="options_${index}"]`))
-                        .map(input => input.value);
-                    const correctAnswer = parseInt(
-                        item.querySelector(`input[name="correct_answer_${index}"]:checked`).value
-                    );
+                    questionItems.forEach((item, index) => {
+                        const questionText = item.querySelector('input[name="questions[]"]').value;
+                        const options = Array.from(item.querySelectorAll(`input[name^="options_${index}"]`))
+                            .map(input => input.value);
+                        const correctAnswer = parseInt(
+                            item.querySelector(`input[name="correct_answer_${index}"]:checked`).value
+                        );
 
-                    quizData.push({
-                        question: questionText,
-                        options: options,
-                        correctAnswer: correctAnswer
+                        quizData.push({
+                            question: questionText,
+                            options: options,
+                            correctAnswer: correctAnswer
+                        });
                     });
-                });
 
-                // Tạo input hidden để lưu dữ liệu JSON
-                const hiddenInput = document.createElement('input');
-                hiddenInput.type = 'hidden';
-                hiddenInput.name = 'exerciseContent';
-                hiddenInput.value = JSON.stringify(quizData);
+                    // Tạo input hidden để lưu dữ liệu JSON
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'exerciseContent';
+                    hiddenInput.value = JSON.stringify(quizData);
 
-                this.appendChild(hiddenInput);
+                    this.appendChild(hiddenInput);
+                }
+
                 this.submit();
             }
         });
