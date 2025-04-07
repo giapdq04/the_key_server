@@ -2,7 +2,8 @@
     <div class="row">
         <div class="col-md-8 mx-auto">
             <h3 class="mb-4">Sửa bài học</h3>
-            <form autocomplete="off" method="POST" action="/courses/{{course._id}}/lessons/{{lesson._id}}?_method=PUT">
+            <form autocomplete="off" method="POST" action="/courses/{{course._id}}/lessons/{{lesson._id}}?_method=PUT"
+                enctype="multipart/form-data">
                 <!-- Lesson type selection -->
                 <div class="mb-3">
                     <label class="form-label">Loại bài học</label>
@@ -53,13 +54,62 @@
 
                 <div id="exerciseField" class="mb-3 {{#unless lesson.questions}}d-none{{/unless}}">
                     <label class="form-label">Câu hỏi trắc nghiệm</label>
-                    <div id="questions-container">
-                        <!-- Câu hỏi sẽ được tải từ dữ liệu hiện có hoặc thêm mới -->
+
+                    <div class="mb-3">
+                        <div class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="exerciseInputType" id="inputTypeManual"
+                                value="manual" checked>
+                            <label class="btn btn-outline-primary" for="inputTypeManual">Nhập thủ công</label>
+
+                            <input type="radio" class="btn-check" name="exerciseInputType" id="inputTypeCsv"
+                                value="csv">
+                            <label class="btn btn-outline-primary" for="inputTypeCsv">Nhập từ file CSV</label>
+                        </div>
                     </div>
 
-                    <button type="button" class="btn btn-outline-primary mt-2" id="add-question-btn">
-                        <i class="bi bi-plus-circle"></i> Thêm câu hỏi
-                    </button>
+                    <div id="manualInputSection">
+                        <div id="questions-container">
+                            <!-- Câu hỏi sẽ được tải từ dữ liệu hiện có hoặc thêm mới -->
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary mt-2" id="add-question-btn">
+                            <i class="bi bi-plus-circle"></i> Thêm câu hỏi
+                        </button>
+                    </div>
+
+                    <div id="csvInputSection" class="d-none">
+                        <div class="mb-3">
+                            <label for="csvFile" class="form-label">Tải lên file CSV</label>
+                            <input class="form-control" type="file" id="csvFile" name="csvFile" accept=".csv">
+                            <div class="form-text mt-2">
+                                File CSV cần có định dạng: Câu hỏi, Đáp án 1, Đáp án 2, Đáp án 3, Đáp án 4, Đáp án đúng
+                                (0-3)
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-outline-primary" id="parseCsvBtn">
+                                <i class="bi bi-check-circle"></i> Xử lý file CSV
+                            </button>
+                        </div>
+                        <div id="csvPreview" class="mt-3 d-none">
+                            <h5>Xem trước câu hỏi từ CSV</h5>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-sm" id="csvPreviewTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Câu hỏi</th>
+                                            <th>Đáp án 1</th>
+                                            <th>Đáp án 2</th>
+                                            <th>Đáp án 3</th>
+                                            <th>Đáp án 4</th>
+                                            <th>Đáp án đúng</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="mt-4">
@@ -77,6 +127,9 @@
         const videoField = document.getElementById('videoField');
         const documentField = document.getElementById('documentField');
         const exerciseField = document.getElementById('exerciseField');
+        const manualInputSection = document.getElementById('manualInputSection');
+        const csvInputSection = document.getElementById('csvInputSection');
+        const exerciseInputTypeRadios = document.getElementsByName('exerciseInputType');
 
         function toggleFields(selectedType) {
             videoField.classList.toggle('d-none', selectedType !== 'video');
@@ -84,9 +137,20 @@
             exerciseField.classList.toggle('d-none', selectedType !== 'exercise');
         }
 
+        function toggleExerciseInputType(selectedInputType) {
+            manualInputSection.classList.toggle('d-none', selectedInputType !== 'manual');
+            csvInputSection.classList.toggle('d-none', selectedInputType !== 'csv');
+        }
+
         lessonTypes.forEach(radio => {
             radio.addEventListener('change', function () {
                 toggleFields(this.value);
+            });
+        });
+
+        exerciseInputTypeRadios.forEach(radio => {
+            radio.addEventListener('change', function () {
+                toggleExerciseInputType(this.value);
             });
         });
 
@@ -199,41 +263,85 @@
                 document.getElementById('lessonVideo').value = '';
                 document.getElementById('lessonResource').value = '';
 
-                // Xử lý bài tập
-                e.preventDefault();
+                const selectedInputType = document.querySelector('input[name="exerciseInputType"]:checked').value;
 
-                const quizData = [];
-                const questionItems = document.querySelectorAll('.question-item');
+                if (selectedInputType === 'manual') {
+                    // Xử lý bài tập nhập thủ công
+                    e.preventDefault();
 
-                questionItems.forEach((item, index) => {
-                    const questionText = item.querySelector('input[name="questions[]"]').value;
-                    const options = Array.from(item.querySelectorAll(`input[name^="options_${index}"]`))
-                        .map(input => input.value.trim());
-                    const correctAnswer = parseInt(
-                        item.querySelector(`input[name="correct_answer_${index}"]:checked`).value
-                    );
+                    const quizData = [];
+                    const questionItems = document.querySelectorAll('.question-item');
 
-                    quizData.push({
-                        question: questionText.trim(),
-                        options: options,
-                        correctAnswer: correctAnswer
+                    questionItems.forEach((item, index) => {
+                        const questionText = item.querySelector('input[name="questions[]"]').value;
+                        const options = Array.from(item.querySelectorAll(`input[name^="options_${index}"]`))
+                            .map(input => input.value.trim());
+                        const correctAnswer = parseInt(
+                            item.querySelector(`input[name="correct_answer_${index}"]:checked`).value
+                        );
+
+                        quizData.push({
+                            question: questionText.trim(),
+                            options: options,
+                            correctAnswer: correctAnswer
+                        });
                     });
-                });
 
-                // Tạo input hidden để lưu dữ liệu JSON
-                const hiddenInput = document.createElement('input');
-                hiddenInput.type = 'hidden';
-                hiddenInput.name = 'exerciseContent';
-                hiddenInput.value = JSON.stringify(quizData);
+                    // Tạo input hidden để lưu dữ liệu JSON
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'exerciseContent';
+                    hiddenInput.value = JSON.stringify(quizData);
 
-                this.appendChild(hiddenInput);
+                    this.appendChild(hiddenInput);
 
-                // Thêm dòng này để tiếp tục submit form sau khi thêm input hidden
-                this.submit();
+                    // Thêm dòng này để tiếp tục submit form sau khi thêm input hidden
+                    this.submit();
+                }
             }
 
             // Nếu không phải exercise, form sẽ submit bình thường
             return true;
+        });
+
+        // Xử lý file CSV
+        const parseCsvBtn = document.getElementById('parseCsvBtn');
+        const csvFileInput = document.getElementById('csvFile');
+        const csvPreview = document.getElementById('csvPreview');
+        const csvPreviewTableBody = document.getElementById('csvPreviewTable').querySelector('tbody');
+
+        parseCsvBtn.addEventListener('click', function () {
+            const file = csvFileInput.files[0];
+            if (!file) {
+                alert('Vui lòng chọn file CSV trước khi xử lý.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                const csvData = event.target.result;
+                const rows = csvData.split('\n').map(row => row.split(','));
+                rows.shift()
+                
+                // Xóa nội dung cũ của bảng
+                csvPreviewTableBody.innerHTML = '';
+
+                rows.forEach(row => {
+                    if (row.length === 6) {
+                        const tr = document.createElement('tr');
+                        row.forEach(cell => {
+                            const td = document.createElement('td');
+                            td.textContent = cell.trim();
+                            tr.appendChild(td);
+                        });
+                        csvPreviewTableBody.appendChild(tr);
+                    }
+                });
+
+                csvPreview.classList.remove('d-none');
+            };
+
+            reader.readAsText(file);
         });
     });
 </script>

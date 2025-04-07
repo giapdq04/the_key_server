@@ -222,8 +222,8 @@ class LessonController {
         try {
             const { id, courseID } = req.params;
             const { title, lessonType, ytbVideoLink, docLink, exerciseContent } = req.body;
-
-            // Kiểm tra tính hợp lệ của ID trước khi truy vấn
+    
+            // Validate ObjectId parameters
             if (!mongoose.Types.ObjectId.isValid(id) || !mongoose.Types.ObjectId.isValid(courseID)) {
                 return res.status(400).json({
                     success: false,
@@ -261,7 +261,7 @@ class LessonController {
                 updateData.docID = null;
                 updateData.questions = null;
 
-                // Thêm vào: Cập nhật duration khi chuyển sang loại video
+                // Cập nhật duration khi chuyển sang loại video
                 updateData.duration = await getVideoDuration(ytbVideoID);
             } else if (lessonType === 'document') {
                 updateData.ytbVideoID = null;
@@ -271,7 +271,21 @@ class LessonController {
             } else if (lessonType === 'exercise') {
                 updateData.ytbVideoID = null;
                 updateData.docID = null;
-                updateData.questions = exerciseContent;
+                
+                // Xử lý dữ liệu câu hỏi (từ CSV hoặc form)
+                let questions = exerciseContent;
+                
+                // Trường hợp upload CSV - nếu có file được tải lên
+                if ((exerciseContent === undefined || exerciseContent === '') && req.file) {
+                    try {
+                        questions = JSON.stringify(await processCSVFile(req.file.path));
+                    } catch (err) {
+                        return res.status(500).json({ error: 'Lỗi khi đọc file CSV' });
+                    }
+                }
+                
+                
+                updateData.questions = questions;
                 updateData.duration = 0; // Đặt duration = 0 cho bài tập
             }
 
