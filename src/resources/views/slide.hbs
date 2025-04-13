@@ -285,22 +285,38 @@
         const slideTypeInput = document.getElementById('slideType');
         const addSlideModalLabel = document.getElementById('addSlideModalLabel');
         
+        // Khởi tạo Bootstrap Modal
+        const selectTypeModal = new bootstrap.Modal(selectSlideTypeModal);
+        const addSlideModalInstance = new bootstrap.Modal(addSlideModal);
+        
         selectDesktopSlide.addEventListener('click', function() {
             slideTypeInput.value = 'desktop';
             addSlideModalLabel.textContent = 'Thêm slide Desktop';
-            selectSlideTypeModal.classList.remove('show');
-            selectSlideTypeModal.style.display = 'none';
-            addSlideModal.classList.add('show');
-            addSlideModal.style.display = 'block';
+            selectTypeModal.hide();
+            setTimeout(() => {
+                addSlideModalInstance.show();
+            }, 150);
         });
         
         selectMobileSlide.addEventListener('click', function() {
             slideTypeInput.value = 'mobile';
             addSlideModalLabel.textContent = 'Thêm slide Mobile';
-            selectSlideTypeModal.classList.remove('show');
-            selectSlideTypeModal.style.display = 'none';
-            addSlideModal.classList.add('show');
-            addSlideModal.style.display = 'block';
+            selectTypeModal.hide();
+            setTimeout(() => {
+                addSlideModalInstance.show();
+            }, 150);
+        });
+
+        // Xử lý đóng modal khi click nút close hoặc nút Hủy
+        const closeButtons = document.querySelectorAll('[data-bs-dismiss="modal"]');
+        closeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const modal = this.closest('.modal');
+                const modalInstance = bootstrap.Modal.getInstance(modal);
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+            });
         });
 
         // Xử lý preview ảnh khi thêm mới
