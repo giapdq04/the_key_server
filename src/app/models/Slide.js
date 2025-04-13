@@ -7,7 +7,8 @@ const Slide = new Schema({
     imageUrl: { type: String, required: true },
     link: { type: String },
     order: { type: Number, default: 1 },
-    active: { type: Boolean, default: true }
+    active: { type: Boolean, default: true },
+    type: { type: String, enum: ['desktop', 'mobile'], default: 'desktop' }
 }, {
     timestamps: true
 });

@@ -10,13 +10,15 @@
                     <i class="bi bi-x"></i>
                 </button>
             </div>
-            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addSlideModal">
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#selectSlideTypeModal">
                 <i class="bi bi-plus-circle"></i> Thêm slide mới
             </button>
         </div>
     </div>
 
+    <!-- Slide Desktop -->
     <div class="mt-4">
+        <h4 class="mb-3">Slide Desktop</h4>
         <table class="table">
             <thead>
                 <tr>
@@ -31,6 +33,7 @@
             </thead>
             <tbody>
                 {{#each slides}}
+                {{#if (eq this.type 'desktop')}}
                 <tr>
                     <th scope="row">{{sum @index 1}}</th>
                     <td>{{this.title}}</td>
@@ -50,7 +53,7 @@
                     <td>
                         <button class="btn btn-sm btn-primary edit-slide-btn" data-id="{{this._id}}"
                             data-title="{{this.title}}" data-image="{{this.imageUrl}}" data-link="{{this.link}}"
-                            data-order="{{this.order}}" data-active="{{this.active}}" data-bs-toggle="modal"
+                            data-order="{{this.order}}" data-active="{{this.active}}" data-type="{{this.type}}" data-bs-toggle="modal"
                             data-bs-target="#editSlideModal">
                             <i class="bi bi-pencil"></i> Sửa
                         </button>
@@ -60,13 +63,93 @@
                         </button>
                     </td>
                 </tr>
+                {{/if}}
                 {{else}}
                 <tr>
-                    <td colspan="7" class="text-center">Chưa có slide nào.</td>
+                    <td colspan="7" class="text-center">Chưa có slide desktop nào.</td>
                 </tr>
                 {{/each}}
             </tbody>
         </table>
+    </div>
+
+    <!-- Slide Mobile -->
+    <div class="mt-4">
+        <h4 class="mb-3">Slide Mobile</h4>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Tiêu đề</th>
+                    <th scope="col">Hình ảnh</th>
+                    <th scope="col">Đường dẫn</th>
+                    <th scope="col">Thứ tự hiển thị</th>
+                    <th scope="col">Trạng thái</th>
+                    <th scope="col">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each slides}}
+                {{#if (eq this.type 'mobile')}}
+                <tr>
+                    <th scope="row">{{sum @index 1}}</th>
+                    <td>{{this.title}}</td>
+                    <td>
+                        <img src="{{this.imageUrl}}" alt="{{this.title}}" class="img-thumbnail"
+                            style="max-width: 100px;">
+                    </td>
+                    <td>{{this.link}}</td>
+                    <td>{{this.order}}</td>
+                    <td>
+                        {{#if this.active}}
+                        <span class="badge bg-success">Hiển thị</span>
+                        {{else}}
+                        <span class="badge bg-secondary">Ẩn</span>
+                        {{/if}}
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-primary edit-slide-btn" data-id="{{this._id}}"
+                            data-title="{{this.title}}" data-image="{{this.imageUrl}}" data-link="{{this.link}}"
+                            data-order="{{this.order}}" data-active="{{this.active}}" data-type="{{this.type}}" data-bs-toggle="modal"
+                            data-bs-target="#editSlideModal">
+                            <i class="bi bi-pencil"></i> Sửa
+                        </button>
+                        <button class="btn btn-sm btn-danger" data-id="{{this._id}}" data-title="{{this.title}}"
+                            data-bs-toggle="modal" data-bs-target="#deleteModal">
+                            <i class="bi bi-trash"></i> Xóa
+                        </button>
+                    </td>
+                </tr>
+                {{/if}}
+                {{else}}
+                <tr>
+                    <td colspan="7" class="text-center">Chưa có slide mobile nào.</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Select Slide Type Modal -->
+<div class="modal fade" id="selectSlideTypeModal" tabindex="-1" aria-labelledby="selectSlideTypeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="selectSlideTypeModalLabel">Chọn loại slide</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-grid gap-3">
+                    <button class="btn btn-lg btn-primary" id="selectDesktopSlide">
+                        <i class="bi bi-display"></i> Slide Desktop
+                    </button>
+                    <button class="btn btn-lg btn-info" id="selectMobileSlide">
+                        <i class="bi bi-phone"></i> Slide Mobile
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -80,6 +163,7 @@
             </div>
             <form autocomplete="off" method="post" action="/slides" enctype="multipart/form-data">
                 <div class="modal-body">
+                    <input type="hidden" id="slideType" name="type" value="">
                     <div class="mb-3">
                         <label for="addTitle" class="form-label">Tiêu đề</label>
                         <input type="text" class="form-control" id="addTitle" name="title" required>
@@ -193,6 +277,32 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // Xử lý chọn loại slide
+        const selectSlideTypeModal = document.getElementById('selectSlideTypeModal');
+        const addSlideModal = document.getElementById('addSlideModal');
+        const selectDesktopSlide = document.getElementById('selectDesktopSlide');
+        const selectMobileSlide = document.getElementById('selectMobileSlide');
+        const slideTypeInput = document.getElementById('slideType');
+        const addSlideModalLabel = document.getElementById('addSlideModalLabel');
+        
+        selectDesktopSlide.addEventListener('click', function() {
+            slideTypeInput.value = 'desktop';
+            addSlideModalLabel.textContent = 'Thêm slide Desktop';
+            selectSlideTypeModal.classList.remove('show');
+            selectSlideTypeModal.style.display = 'none';
+            addSlideModal.classList.add('show');
+            addSlideModal.style.display = 'block';
+        });
+        
+        selectMobileSlide.addEventListener('click', function() {
+            slideTypeInput.value = 'mobile';
+            addSlideModalLabel.textContent = 'Thêm slide Mobile';
+            selectSlideTypeModal.classList.remove('show');
+            selectSlideTypeModal.style.display = 'none';
+            addSlideModal.classList.add('show');
+            addSlideModal.style.display = 'block';
+        });
+
         // Xử lý preview ảnh khi thêm mới
         document.getElementById('addImage').addEventListener('change', function (event) {
             const imagePreview = document.getElementById('addImagePreview');
@@ -266,6 +376,7 @@
             const slideLink = button.getAttribute('data-link');
             const slideOrder = button.getAttribute('data-order');
             const slideActive = button.getAttribute('data-active') === 'true';
+            const slideType = button.getAttribute('data-type');
 
             editSlideForm.action = `/slides/${slideId}?_method=PUT`;
             editTitle.value = slideTitle;

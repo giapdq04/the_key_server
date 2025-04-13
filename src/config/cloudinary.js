@@ -36,8 +36,21 @@ const storageSlide = new CloudinaryStorage({
     },
 });
 
+const storageSlideMobile = new CloudinaryStorage({
+    cloudinary,
+    params: {
+        folder: 'slides/mobile',
+        allowedFormats: ['jpg', 'png', 'jpeg', 'gif'],
+        transformation: [
+            { width: 380, height: 270, crop: 'limit' },
+            { quality: "auto:best" },
+            { fetch_format: "webp" } // Chuyển đổi định dạng sang webp
+        ]
+    },
+});
+
 const upload = multer({ storage });
 
 const uploadSlide = multer({ storage: storageSlide });
-
-module.exports = { upload, cloudinary, uploadSlide };
+const uploadSlideMobile = multer({ storage: storageSlideMobile });
+module.exports = { upload, cloudinary, uploadSlide, uploadSlideMobile };

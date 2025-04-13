@@ -6,7 +6,12 @@ class SlideController {
 
     async index(req, res) {
         try {
-            const slides = await Slide.find().sort({ order: 1 }).lean();
+            const slides = await Slide
+                .find()
+                .select('-__v -deleted -createdAt -updatedAt')
+                .sort({ order: 1 })
+                .lean();
+
             res.render('slide', { slides });
         } catch (error) {
             console.log(error);
@@ -26,7 +31,8 @@ class SlideController {
                 });
             }
 
-            const { title, link, order, active } = req.body;
+            const { title, link, order, active, type } = req.body;
+            
             const imageUrl = req.file.path;
 
             const slide = new Slide({
@@ -34,13 +40,14 @@ class SlideController {
                 imageUrl,
                 link: link || '',
                 order: parseInt(order) || 1,
-                active: active === 'on'
+                active: active === 'on',
+                type
             });
 
             await slide.save();
             res.redirect('/slides');
         } catch (error) {
-            console.log('e: ',error);
+            console.log('e: ', error);
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'
