@@ -45,5 +45,18 @@ module.exports = {
         }
 
         return '<i class="bi bi-pencil-square me-1"></i>'
+    },
+
+    // Helper cho phân trang
+
+    subtract: function(a, b) {
+        return a - b;
+    },
+
+    times: function(n, block) {
+        let accum = '';
+        for(let i = 1; i <= n; ++i)
+            accum += block.fn(i);
+        return accum;
     }
 };

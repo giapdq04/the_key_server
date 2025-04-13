@@ -5,8 +5,29 @@ class UserController {
 
     async index(req, res) {
         try {
-            const users = await User.find().select('-__v -deleted -updatedAt').sort({ createdAt: -1 }).lean();
-            res.render('user', { users });
+            const page = parseInt(req.query.page) || 1;
+            const limit = 8;
+            const skip = (page - 1) * limit;
+
+            const [users, totalUsers] = await Promise.all([
+                User.find()
+                    .select('-__v -deleted -updatedAt')
+                    .sort({ createdAt: -1 })
+                    .skip(skip)
+                    .limit(limit)
+                    .lean(),
+                User.countDocuments()
+            ]);
+
+            const totalPages = Math.ceil(totalUsers / limit);
+
+            res.render('user', { 
+                users,
+                currentPage: page,
+                totalPages,
+                hasNextPage: page < totalPages,
+                hasPrevPage: page > 1
+            });
         } catch (error) {
             console.log(error);
             res.status(500).json({

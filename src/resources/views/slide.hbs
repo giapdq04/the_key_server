@@ -1,8 +1,20 @@
 <div class="mt-4">
-    <h3>Quản lý Slide</h3>
-    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addSlideModal">
-        <i class="bi bi-plus-circle"></i> Thêm slide mới
-    </button>
+    <div class="d-flex justify-content-between align-items-center">
+        <h3>Quản lý Slide</h3>
+        <div class="d-flex gap-2">
+            <div class="input-group" style="width: 300px;">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control" id="slideSearch" placeholder="Tìm kiếm slide...">
+                <button class="btn btn-outline-secondary border-start-0 bg-transparent d-none" type="button"
+                    id="clearSearch" style="margin-left: -1px;">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addSlideModal">
+                <i class="bi bi-plus-circle"></i> Thêm slide mới
+            </button>
+        </div>
+    </div>
 
     <div class="mt-4">
         <table class="table">
@@ -23,7 +35,8 @@
                     <th scope="row">{{sum @index 1}}</th>
                     <td>{{this.title}}</td>
                     <td>
-                        <img src="{{this.imageUrl}}" alt="{{this.title}}" class="img-thumbnail" style="max-width: 100px;">
+                        <img src="{{this.imageUrl}}" alt="{{this.title}}" class="img-thumbnail"
+                            style="max-width: 100px;">
                     </td>
                     <td>{{this.link}}</td>
                     <td>{{this.order}}</td>
@@ -35,16 +48,14 @@
                         {{/if}}
                     </td>
                     <td>
-                        <button class="btn btn-sm btn-primary edit-slide-btn" data-id="{{this._id}}" 
-                            data-title="{{this.title}}" data-image="{{this.imageUrl}}" 
-                            data-link="{{this.link}}" data-order="{{this.order}}" 
-                            data-active="{{this.active}}" data-bs-toggle="modal" 
+                        <button class="btn btn-sm btn-primary edit-slide-btn" data-id="{{this._id}}"
+                            data-title="{{this.title}}" data-image="{{this.imageUrl}}" data-link="{{this.link}}"
+                            data-order="{{this.order}}" data-active="{{this.active}}" data-bs-toggle="modal"
                             data-bs-target="#editSlideModal">
                             <i class="bi bi-pencil"></i> Sửa
                         </button>
-                        <button class="btn btn-sm btn-danger" data-id="{{this._id}}" 
-                            data-title="{{this.title}}" data-bs-toggle="modal" 
-                            data-bs-target="#deleteModal">
+                        <button class="btn btn-sm btn-danger" data-id="{{this._id}}" data-title="{{this.title}}"
+                            data-bs-toggle="modal" data-bs-target="#deleteModal">
                             <i class="bi bi-trash"></i> Xóa
                         </button>
                     </td>
@@ -78,7 +89,8 @@
                         <input class="form-control" type="file" id="addImage" name="image" accept="image/*" required>
                         <!-- Hiển thị ảnh preview -->
                         <div class="mt-2">
-                            <img id="addImagePreview" src="" alt="Ảnh xem trước" style="max-width: 100%; max-height: 200px; display: none;" class="img-thumbnail">
+                            <img id="addImagePreview" src="" alt="Ảnh xem trước"
+                                style="max-width: 100%; max-height: 200px; display: none;" class="img-thumbnail">
                         </div>
                     </div>
                     <div class="mb-3">
@@ -123,12 +135,14 @@
                         <!-- Hiển thị ảnh hiện tại -->
                         <div class="mt-2">
                             <p class="text-muted">Ảnh hiện tại:</p>
-                            <img id="currentImage" src="" alt="Ảnh hiện tại" class="img-thumbnail" style="max-width: 100%; max-height: 200px;">
+                            <img id="currentImage" src="" alt="Ảnh hiện tại" class="img-thumbnail"
+                                style="max-width: 100%; max-height: 200px;">
                         </div>
                         <!-- Hiển thị ảnh preview -->
                         <div class="mt-2">
                             <p class="text-muted">Ảnh mới (nếu có):</p>
-                            <img id="editImagePreview" src="" alt="Ảnh xem trước" style="max-width: 100%; max-height: 200px; display: none;" class="img-thumbnail">
+                            <img id="editImagePreview" src="" alt="Ảnh xem trước"
+                                style="max-width: 100%; max-height: 200px; display: none;" class="img-thumbnail">
                         </div>
                         <!-- Lưu URL ảnh hiện tại -->
                         <input type="hidden" id="currentImageUrl" name="currentImageUrl">
@@ -178,15 +192,15 @@
 <form id="deleteForm" method="POST" style="display: none;"></form>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         // Xử lý preview ảnh khi thêm mới
-        document.getElementById('addImage').addEventListener('change', function(event) {
+        document.getElementById('addImage').addEventListener('change', function (event) {
             const imagePreview = document.getElementById('addImagePreview');
             const file = event.target.files[0];
-            
+
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = function (e) {
                     imagePreview.src = e.target.result;
                     imagePreview.style.display = 'block';
                 }
@@ -196,15 +210,15 @@
                 imagePreview.style.display = 'none';
             }
         });
-        
+
         // Xử lý preview ảnh khi chỉnh sửa
-        document.getElementById('editImage').addEventListener('change', function(event) {
+        document.getElementById('editImage').addEventListener('change', function (event) {
             const imagePreview = document.getElementById('editImagePreview');
             const file = event.target.files[0];
-            
+
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = function (e) {
                     imagePreview.src = e.target.result;
                     imagePreview.style.display = 'block';
                 }
@@ -214,26 +228,26 @@
                 imagePreview.style.display = 'none';
             }
         });
-        
+
         // Xử lý xóa slide
         const deleteModal = document.getElementById('deleteModal');
         const slideTitleToDelete = document.getElementById('slideTitleToDelete');
         const deleteForm = document.getElementById('deleteForm');
         const confirmDelete = document.getElementById('confirmDelete');
         let slideIdToDelete;
-        
-        deleteModal.addEventListener('show.bs.modal', function(event) {
+
+        deleteModal.addEventListener('show.bs.modal', function (event) {
             const button = event.relatedTarget;
             slideIdToDelete = button.getAttribute('data-id');
             const slideTitle = button.getAttribute('data-title');
             slideTitleToDelete.textContent = slideTitle;
         });
-        
-        confirmDelete.addEventListener('click', function() {
+
+        confirmDelete.addEventListener('click', function () {
             deleteForm.action = `/slides/${slideIdToDelete}?_method=DELETE`;
             deleteForm.submit();
         });
-        
+
         // Xử lý chỉnh sửa slide
         const editSlideModal = document.getElementById('editSlideModal');
         const editSlideForm = document.getElementById('editSlideForm');
@@ -243,8 +257,8 @@
         const editLink = document.getElementById('editLink');
         const editOrder = document.getElementById('editOrder');
         const editActive = document.getElementById('editActive');
-        
-        editSlideModal.addEventListener('show.bs.modal', function(event) {
+
+        editSlideModal.addEventListener('show.bs.modal', function (event) {
             const button = event.relatedTarget;
             const slideId = button.getAttribute('data-id');
             const slideTitle = button.getAttribute('data-title');
@@ -252,7 +266,7 @@
             const slideLink = button.getAttribute('data-link');
             const slideOrder = button.getAttribute('data-order');
             const slideActive = button.getAttribute('data-active') === 'true';
-            
+
             editSlideForm.action = `/slides/${slideId}?_method=PUT`;
             editTitle.value = slideTitle;
             currentImage.src = slideImage;
@@ -260,9 +274,49 @@
             editLink.value = slideLink;
             editOrder.value = slideOrder;
             editActive.checked = slideActive;
-            
+
             // Reset preview ảnh mới
             document.getElementById('editImagePreview').style.display = 'none';
+        });
+
+        // Xử lý nút xóa nội dung tìm kiếm
+        const slideSearchInput = document.getElementById('slideSearch');
+        const clearSearchBtn = document.getElementById('clearSearch');
+
+        // Hiển thị nút xóa khi có nội dung
+        slideSearchInput.addEventListener('input', function() {
+            if (this.value.trim() !== '') {
+                clearSearchBtn.classList.remove('d-none');
+            } else {
+                clearSearchBtn.classList.add('d-none');
+            }
+            
+            // Tìm kiếm slide
+            const searchText = this.value.toLowerCase().trim();
+            const tableRows = document.querySelectorAll('tbody tr');
+            
+            tableRows.forEach(row => {
+                if (row.querySelector('td:nth-child(2)')) {
+                    const title = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                    const link = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
+                    
+                    if (title.includes(searchText) || link.includes(searchText) || searchText === '') {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            });
+        });
+
+        // Xử lý khi click vào nút xóa
+        clearSearchBtn.addEventListener('click', function() {
+            slideSearchInput.value = '';
+            clearSearchBtn.classList.add('d-none');
+            // Kích hoạt sự kiện input để cập nhật kết quả tìm kiếm
+            slideSearchInput.dispatchEvent(new Event('input'));
+            // Focus lại vào ô tìm kiếm
+            slideSearchInput.focus();
         });
     });
 </script>

@@ -58,6 +58,33 @@
                 {{/each}}
             </tbody>
         </table>
+
+        <!-- Phân trang -->
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {{#if hasPrevPage}}
+                <li class="page-item">
+                    <a class="page-link" href="/users?page={{subtract currentPage 1}}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {{/if}}
+
+                {{#times totalPages}}
+                <li class="page-item {{#if (eq this ../currentPage)}}active{{/if}}">
+                    <a class="page-link" href="/users?page={{this}}">{{this}}</a>
+                </li>
+                {{/times}}
+
+                {{#if hasNextPage}}
+                <li class="page-item">
+                    <a class="page-link" href="/users?page={{sum currentPage 1}}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                {{/if}}
+            </ul>
+        </nav>
     </div>
 </div>
 
