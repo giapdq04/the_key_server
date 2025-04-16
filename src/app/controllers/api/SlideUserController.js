@@ -4,8 +4,9 @@ class SlideUserController {
 
     async getAllSlides(req, res) {
         try {
+            const { type } = req.query;
             const slides = await Slide
-                .find({ active: true })
+                .find({ active: true, type })
                 .sort({ order: 1 })
                 .select('-active -__v -deleted -createdAt -updatedAt')
             res.status(200).json(slides)
