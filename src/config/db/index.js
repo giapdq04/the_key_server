@@ -18,9 +18,9 @@ async function connect() {
                 });
         }
 
-        console.log('Connect successfully');
+        console.log('✅ Connect successfully');
     } catch (error) {
-        console.log('Connect fail:', error.message);
+        console.log('❌ Connect fail:', error.message);
         // Thử kết nối lại sau một khoảng thời gian
         setTimeout(() => connect(), 5000);
     }

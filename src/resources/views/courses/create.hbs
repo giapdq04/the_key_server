@@ -1,31 +1,89 @@
-<div class="mt-4">
+<div class="mt-4 mb-4">
     <h3>Tạo khóa học</h3>
 
-    <form autocomplete="off" method="post" action="/courses/store" enctype="multipart/form-data">
+    <form id="createCourseForm" autocomplete="off" method="post" action="/courses/store" enctype="multipart/form-data">
         <div class="mb-3">
             <label for="title" class="form-label">Tên khóa học</label>
             <input type="text" class="form-control" id="title" name="title" required>
+            <div id="titleHelp" class="form-text">Ví dụ: Tiếng Anh Cơ Bản</div>
         </div>
 
         <div class="mb-3">
             <label for="thumbnail" class="form-label">Ảnh thumbnail khóa học</label>
             <input class="form-control" type="file" name="thumbnail" id="thumbnail" accept="image/*" required>
-            
+
             <!-- Thêm div hiển thị ảnh preview -->
             <div class="mt-2">
-                <img id="imagePreview" src="" alt="Ảnh xem trước" style="max-width: 300px; max-height: 200px; display: none;" class="img-thumbnail">
+                <img id="imagePreview" src="" alt="Ảnh xem trước"
+                     style="max-width: 300px; max-height: 200px; display: none;" class="img-thumbnail">
             </div>
         </div>
 
         <div class="mb-3">
             <label for="description" class="form-label">Mô tả</label>
             <textarea class="form-control" id="description" name="description" required></textarea>
+            <div id="descriptionHelp" class="form-text">Ví dụ: Đây là khóa học về ...</div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label d-block">Hiển thị</label>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="isActive" id="isActiveYes" value="true" checked>
+                <label class="form-check-label" for="isActiveYes">
+                    Có
+                </label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="isActive" id="isActiveNo" value="false">
+                <label class="form-check-label" for="isActiveNo">
+                    Không
+                </label>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label d-block">Khóa học Premium</label>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="isPremium" id="isPremiumYes" value="true">
+                <label class="form-check-label" for="isPremiumYes">
+                    Phải
+                </label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="isPremium" id="isPremiumNo" value="false" checked>
+                <label class="form-check-label" for="isPremiumNo">
+                    Không phải
+                </label>
+            </div>
+        </div>
+
+        <div class="mb-3 d-none" id="priceField">
+            <label for="price" class="form-label">Giá gốc</label>
+            <input type="number" class="form-control" id="price" name="price" min="0">
+            <div class="form-text">Nếu 1.000.000 VND thì viết là 1000000</div>
+        </div>
+
+        <div class="mb-3 d-none" id="salePriceField">
+            <label for="salePrice" class="form-label">Giảm còn (Nếu muốn giảm giá)</label>
+            <input type="number" class="form-control" id="salePrice" name="salePrice" min="0">
+            <div class="form-text">Muốn giữ giá gốc thì không cần nhập hoặc nhập 0</div>
+        </div>
+
+        {{!-- Giá cuối cùng của khóa học là --}}
+        <div class="mb-3 d-none" id="finalPriceField">
+            <label for="finalPrice" class="form-label">Giá cuối cùng</label>
+            <p id="finalPrice">0 VND</p>
+        </div>
+
+        <div class="mb-3 d-none" id="percentagePriceReduceField">
+            <label for="percentagePriceReduce" class="form-label">Đã giảm (%)</label>
+            <p id="percentagePriceReduce">0 %</p>
         </div>
 
         {{#if error}}
-        <div class="alert alert-danger" role="alert">
-            {{error}}
-        </div>
+            <div class="alert alert-danger" role="alert">
+                {{error}}
+            </div>
         {{/if}}
 
         <button type="submit" class="btn btn-primary">Tạo khóa học</button>
@@ -34,14 +92,14 @@
 
 <!-- Script xử lý hiển thị ảnh preview -->
 <script>
-    document.getElementById('thumbnail').addEventListener('change', function(event) {
+    document.getElementById('thumbnail').addEventListener('change', function (event) {
         const imagePreview = document.getElementById('imagePreview');
         const file = event.target.files[0];
-        
+
         if (file) {
             // Hiển thị ảnh preview
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 imagePreview.src = e.target.result;
                 imagePreview.style.display = 'block';
             }
@@ -51,5 +109,125 @@
             imagePreview.src = '';
             imagePreview.style.display = 'none';
         }
+    });
+
+    // Script xử lý ẩn/hiện và validate trường giá
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('createCourseForm'); // Lấy form bằng ID
+        const premiumRadios = document.querySelectorAll('input[name="isPremium"]');
+        const priceField = document.getElementById('priceField');
+        const salePriceField = document.getElementById('salePriceField');
+        const finalPriceField = document.getElementById('finalPriceField');
+        const percentagePriceReduceField = document.getElementById('percentagePriceReduceField');
+        const priceInput = document.getElementById('price');
+        const salePriceInput = document.getElementById('salePrice');
+        const finalPrice = document.getElementById('finalPrice');
+        const percentagePriceReduce = document.getElementById('percentagePriceReduce');
+        const isPremiumYes = document.getElementById('isPremiumYes');
+
+        function formatVND(number) {
+            if (isNaN(number) || number === null) return '0 VND';
+            return number.toLocaleString('vi-VN') + ' VND';
+        }
+
+        function updateFinalPrice() {
+            if (isPremiumYes && isPremiumYes.checked) {
+                finalPriceField.classList.remove('d-none');
+                percentagePriceReduceField.classList.remove('d-none');
+                let price = parseInt(priceInput.value, 10) || 0;
+                let salePrice = parseInt(salePriceInput.value, 10) || 0;
+                let displayPrice = price;
+                if (salePrice > 0 && salePrice < price) {
+                    displayPrice = salePrice;
+                }
+                let percentage = Math.floor(((price - displayPrice) / price * 100))
+                if (isNaN(percentage)) {
+                    percentage = 0;
+                }
+                percentagePriceReduce.textContent = percentage + ' %';
+                finalPrice.textContent = formatVND(displayPrice);
+            } else {
+                finalPriceField.classList.add('d-none');
+                percentagePriceReduceField.classList.add('d-none');
+                finalPrice.textContent = '0 VND';
+            }
+        }
+
+        function togglePriceFields() {
+            const isPremiumSelected = document.getElementById('isPremiumYes').checked;
+            if (isPremiumSelected) {
+                priceField.classList.remove('d-none');
+                salePriceField.classList.remove('d-none');
+                priceInput.required = true;
+            } else {
+                priceField.classList.add('d-none');
+                salePriceField.classList.add('d-none');
+                priceInput.required = false;
+                priceInput.value = ''; // Xóa giá trị khi ẩn
+                salePriceInput.value = ''; // Xóa giá trị khi ẩn
+            }
+        }
+
+        const validatePrice = function () {
+            // Chỉ validate nếu trường giá đang hiển thị (tức là isPremium = true)
+            const isPremiumSelected = document.getElementById('isPremiumYes').checked;
+            if (!isPremiumSelected) {
+                return true; // Không cần validate nếu không phải premium
+            }
+
+            // Parse giá trị, coi chuỗi rỗng hoặc không phải số là NaN
+            const priceValue = parseInt(priceInput.value, 10);
+            const salePriceValue = salePriceInput.value === '' ? NaN : parseInt(salePriceInput.value, 10); // Cho phép salePrice rỗng
+
+            // Kiểm tra giá gốc phải là số không âm
+            if (isNaN(priceValue) || priceValue < 0) {
+                alert('Giá gốc phải là một số không âm!');
+                priceInput.focus(); // Focus vào trường bị lỗi
+                return false;
+            }
+
+            // Nếu có giá giảm, kiểm tra nó không âm và không lớn hơn giá gốc
+            if (!isNaN(salePriceValue)) { // Chỉ kiểm tra nếu salePrice có giá trị số
+                if (salePriceValue < 0) {
+                    alert('Giá giảm không được âm!');
+                    salePriceInput.focus();
+                    return false;
+                }
+                if (salePriceValue > priceValue) {
+                    alert('Giá giảm không được lớn hơn giá gốc!');
+                    salePriceInput.focus();
+                    return false;
+                }
+            }
+
+            return true; // Validation thành công
+        };
+
+        premiumRadios.forEach(radio => {
+            radio.addEventListener('change', togglePriceFields);
+        });
+
+        priceInput.addEventListener('input', updateFinalPrice);
+        salePriceInput.addEventListener('input', updateFinalPrice);
+        if (isPremiumYes) {
+            isPremiumYes.addEventListener('change', updateFinalPrice);
+        }
+        const isPremiumNo = document.getElementById('isPremiumNo');
+        if (isPremiumNo) {
+            isPremiumNo.addEventListener('change', updateFinalPrice);
+        }
+
+        // Thêm sự kiện submit cho form
+        form.addEventListener('submit', function (event) {
+            if (!validatePrice()) {
+                // Nếu validation thất bại, ngăn form gửi đi
+                event.preventDefault();
+            }
+            // Nếu validate thành công, form sẽ được gửi đi bình thường
+        });
+
+        // Gọi hàm lần đầu để đảm bảo trạng thái đúng khi tải trang
+        togglePriceFields();
+        updateFinalPrice();
     });
 </script>

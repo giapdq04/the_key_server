@@ -26,11 +26,10 @@ class CourseController {
         res.render('courses/create')
     }
 
-
     // [POST] /courses/store
     async store(req, res) {
         try {
-            const { title, description } = req.body;
+            const { title, description, isActive, isPremium, price, salePrice } = req.body;
 
             // Kiểm tra dữ liệu đầu vào
             if (!title || !description || !req.file) {
@@ -39,13 +38,39 @@ class CourseController {
                 });
             }
 
+            if (Boolean(isPremium)) {
+                if (!price || !salePrice) {
+                    return res.render('courses/create', {
+                        error: 'Hãy điền đầy đủ thông tin giá cho khóa học'
+                    });
+                }
+
+                if (parseFloat(price) < parseFloat(salePrice)) {
+                    return res.render('courses/create', {
+                        error: 'Giá bán không được lớn hơn giá gốc'
+                    });
+                }
+
+                if (parseFloat(price) < 0 || parseFloat(salePrice) < 0) {
+                    return res.render('courses/create', {
+                        error: 'Giá không được nhỏ hơn 0'
+                    });
+                }
+            }
+
+
+
             // Lấy thông tin file đã được upload lên Cloudinary
             const thumbnail = req.file.path;
 
             const course = new Course({
                 title: title.trim(),
                 description: description.trim(),
-                thumbnail
+                thumbnail,
+                isActive: isActive === 'true',
+                isPremium: Boolean(isPremium),
+                price: Boolean(isPremium) ? parseFloat(price) : 0,
+                salePrice: Boolean(isPremium) ? parseFloat(salePrice) : 0
             });
 
             await course.save();
@@ -64,13 +89,8 @@ class CourseController {
             const deletedCourses = await Course.countDocumentsWithDeleted({ deleted: true });
             const courses = await Course.find().lean()
 
-            const convertCourses = courses.map(course => ({
-                ...course,
-                updatedAt: course.updatedAt.toLocaleString()
-            }))
-
             res.render('courses/stored-courses', {
-                courses: convertCourses,
+                courses,
                 deletedCourses
             })
         } catch (e) {
@@ -81,7 +101,8 @@ class CourseController {
     // [GET] /courses/:id/edit
     async edit(req, res) {
         try {
-            let course = await Course.findById(req.params.id).lean()
+            const courseId = req.params.id
+            let course = await Course.findById(courseId).lean()
             res.render('courses/edit', { course })
         } catch (e) {
             console.log(e)

@@ -8,6 +8,10 @@ const Course = new Schema({
     description: { type: String, maxLength: 255 },
     thumbnail: { type: String, default: '' },
     slug: { type: String, slug: 'title', unique: true },
+    isPremium: { type: Boolean, default: false },
+    price: { type: Number, default: 0 },
+    salePrice: { type: Number, default: 0 },
+    isActive: { type: Boolean, default: true }
 }, {
     timestamps: true
 })
@@ -18,5 +22,8 @@ Course.plugin(mongooseDelete, {
     overrideMethods: 'all',
     deletedAt: true,
 })
+
+// Thêm index cho tìm kiếm
+Course.index({ isPremium: 1 });
 
 module.exports = mongoose.model('Course', Course)
