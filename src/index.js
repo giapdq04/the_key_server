@@ -127,5 +127,5 @@ route(app)
 
 // Thay đổi app.listen thành server.listen
 server.listen(port, () => {
-    console.log(`Listening on port ${port}: http://localhost:${port}/`)
+    console.log(`Listening on port ${port}: \x1b[1;32mhttp://localhost:${port}\x1b[0m`)
 })

@@ -1,0 +1,109 @@
+<div class="container mt-4">
+    <h3>Quản lý ngân hàng</h3>
+    <form id="bankForm" method="POST" action="/bank/store" class="mb-4" autocomplete="off">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label for="bankName" class="form-label">Tên ngân hàng</label>
+                <input type="text" class="form-control" id="bankName" name="bankName" required>
+            </div>
+            <div class="col-md-4">
+                <label for="bankAccount" class="form-label">Số tài khoản</label>
+                <input type="text" class="form-control" id="bankAccount" name="accountNumber" required>
+            </div>
+            <div class="col-md-4">
+                <button type="button" class="btn btn-primary" id="openOtpDialog">Thêm ngân hàng</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Modal xác nhận mã OTP -->
+    <div class="modal fade" id="otpModal" tabindex="-1" aria-labelledby="otpModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="otpForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="otpModalLabel">Xác nhận mã OTP</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Mã xác nhận đã được gửi tới email của bạn. Vui lòng nhập mã để tiếp tục.</p>
+                        <input type="text" class="form-control" id="otpInput" name="otp" placeholder="Nhập mã xác nhận" required>
+                        <div id="otpError" class="text-danger mt-2 d-none"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Xác nhận</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <h5>Danh sách ngân hàng</h5>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Tên ngân hàng</th>
+                <th>Số tài khoản</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#each banks}}
+            <tr>
+                <td>{{sum @index 1}}</td>
+                <td>{{this.bankName}}</td>
+                <td>{{this.accountNumber}}</td>
+            </tr>
+            {{else}}
+            <tr>
+                <td colspan="3" class="text-center">Chưa có ngân hàng nào</td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const openOtpDialogBtn = document.getElementById('openOtpDialog');
+        const otpModal = new bootstrap.Modal(document.getElementById('otpModal'));
+        const bankForm = document.getElementById('bankForm');
+        const otpForm = document.getElementById('otpForm');
+        const otpInput = document.getElementById('otpInput');
+        const otpError = document.getElementById('otpError');
+
+        openOtpDialogBtn.addEventListener('click', function (e) {
+            // Gửi yêu cầu gửi mã xác nhận về email (nếu cần)
+            alert('Mã xác nhận đã được gửi tới email của bạn!');
+            fetch('/bank/send-otp', { method: 'POST' });
+            otpInput.value = '';
+            otpError.classList.add('d-none');
+            otpModal.show();
+        });
+
+        otpForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            // Gửi mã OTP lên server để xác thực
+            fetch('/bank/verify-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ otp: otpInput.value })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    otpModal.hide();
+                    bankForm.submit();
+                } else {
+                    otpError.textContent = data.message || 'Mã xác nhận không đúng!';
+                    otpError.classList.remove('d-none');
+                }
+            })
+            .catch(() => {
+                otpError.textContent = 'Có lỗi xảy ra, vui lòng thử lại!';
+                otpError.classList.remove('d-none');
+            });
+        });
+    });
+</script>
