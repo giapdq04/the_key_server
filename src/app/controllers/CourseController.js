@@ -17,7 +17,7 @@ class CourseController {
                 layout: 'minimal' // Use minimal layout
             })
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     }
 
@@ -76,7 +76,7 @@ class CourseController {
             await course.save();
             res.redirect('/');
         } catch (e) {
-            console.log(e);
+            console.error(e);
             res.render('courses/create', {
                 error: 'Đã xảy ra lỗi khi tạo khóa học'
             });
@@ -94,7 +94,7 @@ class CourseController {
                 deletedCourses
             })
         } catch (e) {
-            console.log(e)
+            console.error(e)
         }
     }
 
@@ -105,7 +105,7 @@ class CourseController {
             let course = await Course.findById(courseId).lean()
             res.render('courses/edit', { course })
         } catch (e) {
-            console.log(e)
+            console.error(e)
         }
     }
 
@@ -143,7 +143,7 @@ class CourseController {
             await Course.updateOne({ _id: req.params.id }, formData);
             res.redirect('/courses/stored-courses');
         } catch (e) {
-            console.log(e);
+            console.error(e);
             res.status(500).render('courses/edit', {
                 error: 'Đã xảy ra lỗi khi cập nhật khóa học'
             });
@@ -166,7 +166,7 @@ class CourseController {
 
             res.redirect('back');
         } catch (e) {
-            console.log(e);
+            console.error(e);
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'
@@ -208,7 +208,7 @@ class CourseController {
 
             res.redirect('back');
         } catch (e) {
-            console.log(e);
+            console.error(e);
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'
@@ -230,7 +230,7 @@ class CourseController {
                 courses: convertCourses
             })
         } catch (e) {
-            console.log(e)
+            console.error(e)
         }
     }
 
@@ -240,7 +240,7 @@ class CourseController {
             await Course.restore({ _id: req.params.id })
             res.redirect('back')
         } catch (e) {
-            console.log(e)
+            console.error(e)
         }
     }
 
@@ -256,7 +256,7 @@ class CourseController {
                     res.json({ message: 'Action is invalid!' })
             }
         } catch (e) {
-            console.log(e)
+            console.error(e)
         }
     }
 
@@ -277,7 +277,7 @@ class CourseController {
 
             res.redirect('back')
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     }
 
@@ -300,7 +300,7 @@ class CourseController {
     //         const course = await Course.findById(courseID)
     //         res.json(course)
     //     } catch (error) {
-    //         console.log(error);
+    //         console.error(error);
     //         res.status(500).json({
     //             success: false,
     //             message: 'Internal server error'

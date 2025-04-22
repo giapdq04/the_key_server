@@ -23,7 +23,7 @@ class CourseDetailController {
                 layout: 'minimal'
             });
         } catch (error) {
-            console.log(error);
+            console.error(error);
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'
@@ -64,7 +64,7 @@ class CourseDetailController {
             });
 
         } catch (error) {
-            console.log(error);
+            console.error(error);
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'

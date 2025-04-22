@@ -14,7 +14,7 @@ class SlideController {
 
             res.render('slide', { slides });
         } catch (error) {
-            console.log(error);
+            console.error(error);
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'
@@ -47,7 +47,7 @@ class SlideController {
             await slide.save();
             res.redirect('/slides');
         } catch (error) {
-            console.log('e: ', error);
+            console.error('e: ', error);
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'
@@ -85,7 +85,7 @@ class SlideController {
             await Slide.findByIdAndUpdate(req.params.id, updateData);
             res.redirect('/slides');
         } catch (error) {
-            console.log(error);
+            console.error(error);
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'
@@ -109,7 +109,7 @@ class SlideController {
             await Slide.deleteOne({ _id: req.params.id });
             res.redirect('/slides');
         } catch (error) {
-            console.log(error);
+            console.error(error);
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'

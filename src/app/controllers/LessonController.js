@@ -50,7 +50,7 @@ class LessonController {
                 layout: 'minimal'
             });
         } catch (error) {
-            console.log(error);
+            console.error(error);
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'
@@ -107,7 +107,7 @@ class LessonController {
             return res.redirect(`/${course.slug}/lessons`);
             
         } catch (error) {
-            console.log(error);
+            console.error(error);
             return res.status(500).json({
                 success: false,
                 message: 'Internal server error'
@@ -154,7 +154,7 @@ class LessonController {
             await Lesson.delete({ _id: id });
             res.redirect(`/${course.slug}/lessons`);
         } catch (error) {
-            console.log(error);
+            console.error(error);
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'
@@ -210,7 +210,7 @@ class LessonController {
             });
 
         } catch (error) {
-            console.log(error);
+            console.error(error);
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'
@@ -297,7 +297,7 @@ class LessonController {
             // Chuyển hướng người dùng
             res.redirect(`/${course.slug}/lessons`);
         } catch (error) {
-            console.log(error);
+            console.error(error);
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'

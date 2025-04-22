@@ -19,7 +19,7 @@ class SiteController {
                 activeUsers: activeUsers
             });
         } catch (error) {
-            console.log(error);
+            console.error(error);
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'

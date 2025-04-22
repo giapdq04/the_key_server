@@ -86,7 +86,7 @@ class AuthController {
                 message: 'Tạo tài khoản thành công'
             });
         } catch (error) {
-            console.log(error);
+            console.error(error);
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'
@@ -112,7 +112,7 @@ class AuthController {
                 success
             });
         } catch (error) {
-            console.log(error);
+            console.error(error);
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'
@@ -169,7 +169,7 @@ class AuthController {
             await newAdmin.save();
             res.redirect('/admins');
         } catch (error) {
-            console.log(error);
+            console.error(error);
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'
@@ -203,7 +203,7 @@ class AuthController {
             await Admin.deleteOne({ _id: id });
             res.redirect('/admins');
         } catch (error) {
-            console.log(error);
+            console.error(error);
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'
@@ -250,7 +250,7 @@ class AuthController {
             req.session.success = 'Cập nhật quyền thành công';
             res.redirect('/admins');
         } catch (error) {
-            console.log(error);
+            console.error(error);
             req.session.error = 'Đã xảy ra lỗi, vui lòng thử lại';
             res.redirect('/admins');
         }

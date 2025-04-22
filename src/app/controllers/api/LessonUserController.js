@@ -40,7 +40,7 @@ class LessonUserController {
                 res.status(200).json({ message: "Lesson already completed" });
             }
         } catch (error) {
-            console.log(error);
+            console.error(error);
             res.status(500).json({ message: "Internal server error" });
         }
     }

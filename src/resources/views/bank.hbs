@@ -39,29 +39,7 @@
         </div>
     </div>
 
-    <h5>Danh sách ngân hàng</h5>
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Tên ngân hàng</th>
-                <th>Số tài khoản</th>
-            </tr>
-        </thead>
-        <tbody>
-            {{#each banks}}
-            <tr>
-                <td>{{sum @index 1}}</td>
-                <td>{{this.bankName}}</td>
-                <td>{{this.accountNumber}}</td>
-            </tr>
-            {{else}}
-            <tr>
-                <td colspan="3" class="text-center">Chưa có ngân hàng nào</td>
-            </tr>
-            {{/each}}
-        </tbody>
-    </table>
+    
 </div>
 
 <script>

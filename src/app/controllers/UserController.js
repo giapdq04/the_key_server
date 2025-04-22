@@ -29,7 +29,7 @@ class UserController {
                 hasPrevPage: page > 1
             });
         } catch (error) {
-            console.log(error);
+            console.error(error);
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'
@@ -69,7 +69,7 @@ class UserController {
 
             res.redirect('/users');
         } catch (error) {
-            console.log(error);
+            console.error(error);
             res.status(500).json({
                 success: false,
                 message: 'Internal server error'

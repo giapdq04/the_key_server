@@ -31,7 +31,7 @@ class CourseUserController {
 
             res.json(result);
         } catch (e) {
-            console.log(e);
+            console.error(e);
             res.status(500).json({ error: e.message });
         }
     }
@@ -128,7 +128,7 @@ class CourseUserController {
             })
 
         } catch (error) {
-            console.log(error)
+            console.error(error)
             res.status(500).json({ message: "Internal server error" })
         }
     }
@@ -172,7 +172,7 @@ class CourseUserController {
             res.status(201).json({ message: "Enrolled successfully" });
 
         } catch (error) {
-            console.log(error);
+            console.error(error);
             res.status(500).json({ message: "Internal server error" });
         }
     }
@@ -216,7 +216,7 @@ class CourseUserController {
 
             res.status(200).json(enrolledCourses);
         } catch (error) {
-            console.log(error);
+            console.error(error);
             res.status(500).json({ message: "Internal server error" });
         }
     }
@@ -230,7 +230,7 @@ class CourseUserController {
 
             res.json(course)
         } catch (error) {
-            console.log(error)
+            console.error(error)
             res.status(500).json({ message: error.message })
         }
     }
