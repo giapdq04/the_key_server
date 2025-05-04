@@ -59,7 +59,8 @@ app.use(helmet({
                 "https://img.youtube.com", 
                 "https://*.ytimg.com", 
                 "https://res.cloudinary.com",
-                "https://lh3.googleusercontent.com"
+                "https://lh3.googleusercontent.com",
+                'https://qr.sepay.vn'
             ],
             frameSrc: ["'self'", "https://www.youtube.com", "https://youtube.com"],
             connectSrc: ["'self'"]

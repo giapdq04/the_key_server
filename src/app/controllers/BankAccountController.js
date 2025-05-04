@@ -22,13 +22,14 @@ class BankAccountController {
             req.session.save();
 
             await EmailService.sendCodeToChangeBank(otp)
+            res.status(200).json({ success: true, message: 'OTP sent successfully' });
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: 'Internal server error' });
         }
     }
 
-    veriryOTP(req, res) {
+    verifyOTP(req, res) {
         try {
             const { otp } = req.body;
             const currentUser = req.session.user;
@@ -58,10 +59,21 @@ class BankAccountController {
         }
     }
 
+    async checkBankAccount(req, res) {
+        try {
+            const countAccount = await BankAccount.countDocuments()
+            return res.status(200).json({ success: true, countAccount });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ success: false, message: 'Internal server error' });
+        }
+    }
+
     async store(req, res) {
         try {
-            const { bankName, accountNumber } = req.body;
+            await BankAccount.deleteMany();
 
+            const { bankName, accountNumber } = req.body;
 
             const bankAccount = new BankAccount({
                 accountNumber,
@@ -75,6 +87,16 @@ class BankAccountController {
             if (error.code === 11000) {
                 return res.status(400).json({ message: 'Số tài khoản đã tồn tại!' });
             }
+            console.error(error);
+            res.status(500).json({ message: 'Internal server error' });
+        }
+    }
+
+    async getBankAccount(req, res) {
+        try {
+            const bank = await BankAccount.find().select('accountNumber bankName').lean();
+            res.status(200).json({ success: true, bank: bank[0] });
+        } catch (error) {
             console.error(error);
             res.status(500).json({ message: 'Internal server error' });
         }

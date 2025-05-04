@@ -5,7 +5,7 @@ class BankController {
     // [GET] /bank/bank-list
     async getBankList(req, res) {
         try {
-            const bankList = await Bank.find();
+            const bankList = await Bank.find().select('bankName')
             return res.status(200).json(bankList);
         } catch (error) {
             return res.status(500).json({message: 'Internal Server Error'});
@@ -19,6 +19,10 @@ class BankController {
             const newBank = await Bank.create({bankName});
             return res.status(201).json(newBank);
         } catch (error) {
+            console.error(error);
+            if (error.code === 11000) {
+                return res.status(400).json({message: 'Bank already exists'});
+            }
             return res.status(500).json({message: 'Internal Server Error'});
         }
     }

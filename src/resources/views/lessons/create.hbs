@@ -270,7 +270,12 @@
         parseCsvBtn.addEventListener('click', function () {
             const file = csvFileInput.files[0];
             if (!file) {
-                alert('Vui lòng chọn file CSV trước khi xử lý.');
+                Swal.fire({
+                    title: 'Cảnh báo',
+                    text: 'Vui lòng chọn file CSV trước khi xử lý.',
+                    icon: 'warning',
+                    confirmButtonText: 'OK'
+                });
                 return;
             }
 

@@ -3,18 +3,25 @@
     <form id="bankForm" method="POST" action="/bank/store" class="mb-4" autocomplete="off">
         <div class="row g-2 align-items-end">
             <div class="col-md-4">
-                <label for="bankName" class="form-label">Tên ngân hàng</label>
-                <input type="text" class="form-control" id="bankName" name="bankName" required>
+                <label for="selectBank" class="form-label">Chọn ngân hàng</label>
+                <select class="form-select" id="selectBank" name="bankName" aria-label="Default select example">
+                    <option value="">-- Chọn ngân hàng --</option>
+                </select>
+                <div id="bankHelp" class="form-text">Ví dụ: MBBank</div>
             </div>
             <div class="col-md-4">
                 <label for="bankAccount" class="form-label">Số tài khoản</label>
                 <input type="text" class="form-control" id="bankAccount" name="accountNumber" required>
+                <div id="bankAccountHelp" class="form-text">Ví dụ: 90000004002901</div>
             </div>
-            <div class="col-md-4">
-                <button type="button" class="btn btn-primary" id="openOtpDialog">Thêm ngân hàng</button>
-            </div>
+
+        </div>
+        <div class="col-md-4 mt-4">
+            <button type="button" class="btn btn-primary" id="openOtpDialog">Thay đổi ngân hàng</button>
         </div>
     </form>
+
+    <img id="qr-image" src="https://qr.sepay.vn/img?acc=0010000000355&bank=Vietcombank&amount=5000" alt="">
 
     <!-- Modal xác nhận mã OTP -->
     <div class="modal fade" id="otpModal" tabindex="-1" aria-labelledby="otpModalLabel" aria-hidden="true">
@@ -27,7 +34,8 @@
                     </div>
                     <div class="modal-body">
                         <p>Mã xác nhận đã được gửi tới email của bạn. Vui lòng nhập mã để tiếp tục.</p>
-                        <input type="text" class="form-control" id="otpInput" name="otp" placeholder="Nhập mã xác nhận" required>
+                        <input type="text" class="form-control" id="otpInput" name="otp" placeholder="Nhập mã xác nhận"
+                            required>
                         <div id="otpError" class="text-danger mt-2 d-none"></div>
                     </div>
                     <div class="modal-footer">
@@ -38,8 +46,6 @@
             </div>
         </div>
     </div>
-
-    
 </div>
 
 <script>
@@ -50,14 +56,144 @@
         const otpForm = document.getElementById('otpForm');
         const otpInput = document.getElementById('otpInput');
         const otpError = document.getElementById('otpError');
+        const selectBank = document.getElementById('selectBank');
+        const bankAccount = document.getElementById('bankAccount');
+        const qrImage = document.getElementById('qr-image');
 
-        openOtpDialogBtn.addEventListener('click', function (e) {
-            // Gửi yêu cầu gửi mã xác nhận về email (nếu cần)
-            alert('Mã xác nhận đã được gửi tới email của bạn!');
-            fetch('/bank/send-otp', { method: 'POST' });
-            otpInput.value = '';
-            otpError.classList.add('d-none');
-            otpModal.show();
+        // Lưu thông tin ngân hàng hiện tại
+        let currentBank = {
+            bankName: null,
+            accountNumber: null
+        };
+
+        // Hàm load danh sách ngân hàng
+        const loadBankList = async () => {
+            try {
+                const response = await fetch('/bank/bank-list');
+                const banks = await response.json();
+
+                // Thêm các options vào select
+                banks.forEach(bank => {
+                    const option = document.createElement('option');
+                    option.value = bank.bankName;
+                    option.textContent = bank.bankName;
+                    selectBank.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Không thể tải danh sách ngân hàng:', error);
+            }
+        };
+
+        const getBankAccount = async () => {
+            try {
+                const response = await fetch('/bank/get-bank-account');
+                const data = await response.json();
+                if (data.success) {
+                    bankAccount.value = data.bank.accountNumber;
+                    selectBank.value = data.bank.bankName;
+                    currentBank = data.bank;
+                } else {
+                    Swal.fire({
+                        title: 'Thông báo',  // Tiêu đề tùy chỉnh
+                        text: 'Không thể lấy thông tin tài khoản ngân hàng!',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            } catch (error) {
+                console.error('Lỗi:', error);
+            }
+        };
+
+        function debounce(func, delay) {
+            let timer;
+            return function (...args) {
+                clearTimeout(timer);
+                timer = setTimeout(() => {
+                    func.apply(this, args);
+                }, delay);
+            };
+        }
+
+        const checkChange = () => {
+            qrImage.src = `https://qr.sepay.vn/img?acc=${bankAccount.value}&bank=${selectBank.value}`;
+
+            if (currentBank &&
+                currentBank.accountNumber === bankAccount.value &&
+                currentBank.bankName === selectBank.value) {
+                openOtpDialogBtn.classList.add('disabled');
+            } else {
+                openOtpDialogBtn.classList.remove('disabled');
+            }
+        }
+        const debouncedCheckChange = debounce(checkChange, 300);
+
+        // Gọi hàm load danh sách ngân hàng
+        loadBankList().then(() => {
+            getBankAccount().then(() => {
+                checkChange();
+            });
+        });
+
+        // Thêm event listener cho các trường input để kiểm tra thay đổi
+        selectBank.addEventListener('change', debouncedCheckChange);
+        bankAccount.addEventListener('input', debouncedCheckChange);
+
+        openOtpDialogBtn.addEventListener('click', async function (e) {
+            if (bankAccount.value.length <= 0 || selectBank.value.length <= 0) {
+                Swal.fire({
+                    title: 'Cảnh báo',
+                    text: 'Vui lòng nhập đủ thông tin!',
+                    icon: 'warning',
+                    confirmButtonText: 'OK'
+                });
+                return;
+            }
+
+            try {
+
+                // Chỉ gửi OTP khi chưa có tài khoản
+                const otpResponse = await fetch('/bank/send-otp', { method: 'POST' });
+
+                console.log('OTP Response:', otpResponse);
+
+                // Nếu gửi OTP thành công
+                if (otpResponse.ok) {
+                    Swal.fire({
+                        title: 'Thông báo',  // Tiêu đề tùy chỉnh
+                        text: 'Mã xác nhận đã được gửi tới email của bạn!',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    });
+                    otpInput.value = '';
+                    otpError.classList.add('d-none');
+                    otpModal.show();
+                }
+                else if (otpResponse.status === 403) {
+                    Swal.fire({
+                        title: 'Thông báo',  // Tiêu đề tùy chỉnh
+                        text: 'Bạn không có quyền thực hiện hành động này!',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+                else {
+                    Swal.fire({
+                        title: 'Lỗi',
+                        text: 'Không thể gửi mã OTP. Vui lòng thử lại sau.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            } catch (error) {
+                console.error('Lỗi:', error);
+                Swal.fire({
+                    title: 'Lỗi',
+                    text: 'Đã xảy ra lỗi. Vui lòng thử lại sau.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
         });
 
         otpForm.addEventListener('submit', function (e) {
@@ -68,20 +204,20 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ otp: otpInput.value })
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    otpModal.hide();
-                    bankForm.submit();
-                } else {
-                    otpError.textContent = data.message || 'Mã xác nhận không đúng!';
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        otpModal.hide();
+                        bankForm.submit();
+                    } else {
+                        otpError.textContent = data.message || 'Mã xác nhận không đúng!';
+                        otpError.classList.remove('d-none');
+                    }
+                })
+                .catch(() => {
+                    otpError.textContent = 'Có lỗi xảy ra, vui lòng thử lại!';
                     otpError.classList.remove('d-none');
-                }
-            })
-            .catch(() => {
-                otpError.textContent = 'Có lỗi xảy ra, vui lòng thử lại!';
-                otpError.classList.remove('d-none');
-            });
+                });
         });
     });
 </script>

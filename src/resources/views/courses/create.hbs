@@ -16,7 +16,7 @@
             <!-- Thêm div hiển thị ảnh preview -->
             <div class="mt-2">
                 <img id="imagePreview" src="" alt="Ảnh xem trước"
-                     style="max-width: 300px; max-height: 200px; display: none;" class="img-thumbnail">
+                    style="max-width: 300px; max-height: 200px; display: none;" class="img-thumbnail">
             </div>
         </div>
 
@@ -82,9 +82,9 @@
         </div>
 
         {{#if error}}
-            <div class="alert alert-danger" role="alert">
-                {{error}}
-            </div>
+        <div class="alert alert-danger" role="alert">
+            {{error}}
+        </div>
         {{/if}}
 
         <button type="submit" class="btn btn-primary">Tạo khóa học</button>
@@ -182,7 +182,12 @@
 
             // Kiểm tra giá gốc phải là số không âm
             if (isNaN(priceValue) || priceValue < 0) {
-                alert('Giá gốc phải là một số không âm!');
+                Swal.fire({
+                    title: 'Cảnh báo',
+                    text: 'Giá gốc phải là một số không âm!',
+                    icon: 'warning',
+                    confirmButtonText: 'OK'
+                });
                 priceInput.focus(); // Focus vào trường bị lỗi
                 return false;
             }
@@ -190,12 +195,22 @@
             // Nếu có giá giảm, kiểm tra nó không âm và không lớn hơn giá gốc
             if (!isNaN(salePriceValue)) { // Chỉ kiểm tra nếu salePrice có giá trị số
                 if (salePriceValue < 0) {
-                    alert('Giá giảm không được âm!');
+                    Swal.fire({
+                        title: 'Cảnh báo',
+                        text: 'Giá giảm không được âm!',
+                        icon: 'warning',
+                        confirmButtonText: 'OK'
+                    });
                     salePriceInput.focus();
                     return false;
                 }
                 if (salePriceValue > priceValue) {
-                    alert('Giá giảm không được lớn hơn giá gốc!');
+                    Swal.fire({
+                        title: 'Cảnh báo',
+                        text: 'Giá giảm không được lớn hơn giá gốc!',
+                        icon: 'warning',
+                        confirmButtonText: 'OK'
+                    });
                     salePriceInput.focus();
                     return false;
                 }

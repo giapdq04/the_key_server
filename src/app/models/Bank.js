@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 const mongooseDelete = require('mongoose-delete')
 
 const Bank = new Schema({
-    bankName: { type: String, required: true, trim: true },
+    bankName: { type: String, required: true, trim: true, unique: true, index: true },
 }, {
     timestamps: true
 })

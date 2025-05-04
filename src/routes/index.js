@@ -19,6 +19,7 @@ const route = (app) => {
     app.use('/admins', requireLogin, adminRouter)
     app.use('/slides', requireLogin, slideRouter)
     app.use('/users', requireLogin, userRouter)
+    // app.use('/bank', requireLogin, bankRouter)
     app.use('/bank', requireLogin, bankRouter)
     app.use('/', requireLogin, lessonRouter)
     app.use('/', requireLogin, sectionRouter)

@@ -5,9 +5,11 @@ const bankCtrl = require('../app/controllers/BankController');
 
 //Tài khoản ngân hàng
 router.get('/', bankAccountCtrl.show);
+router.get('/get-bank-account', bankAccountCtrl.getBankAccount);
 router.post('/store', bankAccountCtrl.store);
 router.post('/send-otp', bankAccountCtrl.sendOTP);
-router.post('/verify-otp', bankAccountCtrl.veriryOTP);
+router.post('/verify-otp', bankAccountCtrl.verifyOTP);
+router.get('/check-bank-account', bankAccountCtrl.checkBankAccount);
 
 // Ngân hàng
 router.post('/create-bank', bankCtrl.createBank); // Tạo ngân hàng

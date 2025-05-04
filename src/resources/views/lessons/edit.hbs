@@ -313,7 +313,12 @@
         parseCsvBtn.addEventListener('click', function () {
             const file = csvFileInput.files[0];
             if (!file) {
-                alert('Vui lòng chọn file CSV trước khi xử lý.');
+                Swal.fire({
+                    title: 'Cảnh báo',
+                    text: 'Vui lòng chọn file CSV trước khi xử lý.',
+                    icon: 'warning',
+                    confirmButtonText: 'OK'
+                });
                 return;
             }
 
@@ -322,7 +327,7 @@
                 const csvData = event.target.result;
                 const rows = csvData.split('\n').map(row => row.split(','));
                 rows.shift()
-                
+
                 // Xóa nội dung cũ của bảng
                 csvPreviewTableBody.innerHTML = '';
 
