@@ -49,7 +49,7 @@ class SectionController {
                 { _id: id },
                 { title: req.body.title }
             );
-            res.redirect('back');
+            res.redirect(req.get("Referrer") || "/");
         } catch (error) {
             console.error(error);
             res.status(500).json({
@@ -75,7 +75,7 @@ class SectionController {
             await Lesson.deleteMany({ sectionID: id });
 
             await Section.deleteOne({ _id: req.params.id });
-            res.redirect('back');
+            res.redirect(req.get("Referrer") || "/");
         } catch (error) {
             console.error(error);
             res.status(500).json({

@@ -4,10 +4,18 @@
             <div class="col-md-8">
                 <h1>{{course.title}}</h1>
                 <p class="lead mb-0">{{course.description}}</p>
+
+                <div class="form-check form-switch mt-2">
+                    <input class="form-check-input" type="checkbox" role="switch" id="courseVisibilitySwitch" {{#if
+                        course.isActive}}checked{{/if}}>
+                    <label class="form-check-label" for="courseVisibilitySwitch">
+                        <span id="visibilityStatus">{{#if course.isActive}}Hiển thị{{else}}Đã ẩn{{/if}}</span>
+                    </label>
+                </div>
+
             </div>
             <div class="col-md-4">
-                <img src="{{course.thumbnail}}" class="img-fluid rounded"
-                    alt="{{course.title}}">
+                <img src="{{course.thumbnail}}" class="img-fluid rounded" alt="{{course.title}}">
             </div>
         </div>
     </div>
@@ -169,6 +177,53 @@
             e.preventDefault();
             editSectionForm.action = `/sections/${sectionIdToEdit}?_method=PUT`;
             editSectionForm.submit();
+        });
+
+        
+        const visibilitySwitch = document.getElementById('courseVisibilitySwitch');
+        const visibilityStatus = document.getElementById('visibilityStatus');
+
+        // Xử lý chuyển đổi hiển thị khóa học
+        visibilitySwitch.addEventListener('change', function() {
+            const isActive = this.checked;
+            
+            fetch(`/courses/{{course._id}}/toggle-visibility`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ isActive })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    visibilityStatus.textContent = isActive ? 'Hiển thị' : 'Đã ẩn';
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Thành công',
+                        text: `Khóa học đã được ${isActive ? 'hiển thị' : 'ẩn'}!`,
+                        timer: 1500
+                    });
+                } else {
+                    // Khôi phục trạng thái nếu có lỗi
+                    visibilitySwitch.checked = !isActive;
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: data.message || 'Không thể thay đổi trạng thái khóa học!'
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Khôi phục trạng thái nếu có lỗi
+                visibilitySwitch.checked = !isActive;
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi',
+                    text: 'Đã xảy ra lỗi khi cập nhật trạng thái!'
+                });
+            });
         });
     })
 </script>

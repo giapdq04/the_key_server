@@ -14,5 +14,6 @@ router.put('/:id', upload.single('thumbnail'), courseCtrl.update)
 router.patch('/:id/restore', courseCtrl.restore)
 router.delete('/:id', courseCtrl.delete)
 router.delete('/:id/force', courseCtrl.forceDelete)
+router.patch('/:id/toggle-visibility', courseCtrl.toggleVisibility);
 
 module.exports = router

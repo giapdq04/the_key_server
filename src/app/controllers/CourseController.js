@@ -164,7 +164,7 @@ class CourseController {
             // Soft delete all lessons of this course
             await Lesson.deleteMany({ courseID: courseId });
 
-            res.redirect('back');
+            res.redirect(req.get("Referrer") || "/");
         } catch (e) {
             console.error(e);
             res.status(500).json({
@@ -206,7 +206,7 @@ class CourseController {
             // Permanently delete the course itself
             await Course.deleteOne({ _id: courseId });
 
-            res.redirect('back');
+            res.redirect(req.get("Referrer") || "/");
         } catch (e) {
             console.error(e);
             res.status(500).json({
@@ -238,7 +238,7 @@ class CourseController {
     async restore(req, res) {
         try {
             await Course.restore({ _id: req.params.id })
-            res.redirect('back')
+            res.redirect(req.get("Referrer") || "/");
         } catch (e) {
             console.error(e)
         }
@@ -250,7 +250,7 @@ class CourseController {
             switch (req.body.action) {
                 case 'delete':
                     await Course.delete({ _id: req.body.courseIds })
-                    res.redirect('back')
+                    res.redirect(req.get("Referrer") || "/");
                     break
                 default:
                     res.json({ message: 'Action is invalid!' })
@@ -275,40 +275,28 @@ class CourseController {
                     break;
             }
 
-            res.redirect('back')
+            res.redirect(req.get("Referrer") || "/");
         } catch (error) {
             console.error(error);
         }
     }
 
-    // async calculateDuration(req, res) {
+    async toggleVisibility(req, res) {
+        try {
+            const courseId = req.params.id;
+            const { isActive } = req.body;
 
-    //     function durationToSeconds(duration) {
-    //         const hours = duration.match(/(\d+)H/);
-    //         const minutes = duration.match(/(\d+)M/);
-    //         const seconds = duration.match(/(\d+)S/);
+            await Course.updateOne(
+                { _id: courseId },
+                { isActive: isActive }
+            );
 
-    //         const h = hours ? parseInt(hours[1]) : 0;
-    //         const m = minutes ? parseInt(minutes[1]) : 0;
-    //         const s = seconds ? parseInt(seconds[1]) : 0;
-
-    //         return h * 3600 + m * 60 + s;
-    //     }
-
-    //     try {
-    //         const { courseID } = req.params
-    //         const course = await Course.findById(courseID)
-    //         res.json(course)
-    //     } catch (error) {
-    //         console.error(error);
-    //         res.status(500).json({
-    //             success: false,
-    //             message: 'Internal server error'
-    //         })
-    //     }
-    // }
-
-
+            res.json({ success: true });
+        } catch (error) {
+            console.error('Error toggling course visibility:', error);
+            res.status(500).json({ success: false, message: 'Đã xảy ra lỗi khi cập nhật trạng thái' });
+        }
+    }
 }
 
 module.exports = new CourseController;
