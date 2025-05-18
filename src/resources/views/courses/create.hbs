@@ -183,8 +183,19 @@
             // Kiểm tra giá gốc phải là số không âm
             if (isNaN(priceValue) || priceValue < 0) {
                 Swal.fire({
-                    title: 'Cảnh báo',
+                    title: 'Nhắc nhở',
                     text: 'Giá gốc phải là một số không âm!',
+                    icon: 'warning',
+                    confirmButtonText: 'OK'
+                });
+                priceInput.focus(); // Focus vào trường bị lỗi
+                return false;
+            }
+
+            if (priceValue == 0) {
+                Swal.fire({
+                    title: 'Nhắc nhở',
+                    text: 'Nếu giá gốc của khóa học là 0 đồng thì bạn hãy chọn không phải khóa học premium!',
                     icon: 'warning',
                     confirmButtonText: 'OK'
                 });
@@ -196,7 +207,7 @@
             if (!isNaN(salePriceValue)) { // Chỉ kiểm tra nếu salePrice có giá trị số
                 if (salePriceValue < 0) {
                     Swal.fire({
-                        title: 'Cảnh báo',
+                        title: 'Nhắc nhở',
                         text: 'Giá giảm không được âm!',
                         icon: 'warning',
                         confirmButtonText: 'OK'
@@ -206,7 +217,7 @@
                 }
                 if (salePriceValue > priceValue) {
                     Swal.fire({
-                        title: 'Cảnh báo',
+                        title: 'Nhắc nhở',
                         text: 'Giá giảm không được lớn hơn giá gốc!',
                         icon: 'warning',
                         confirmButtonText: 'OK'

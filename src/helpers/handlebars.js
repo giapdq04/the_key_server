@@ -1,10 +1,13 @@
 module.exports = {
+    // tính tổng
     sum: (a, b) => a + b,
 
+    // sử dụng trong main layout để thêm class active cho menu
     isActive: function (path) {
         return path === this.req.originalUrl ? 'active' : '';
     },
 
+    // nối chuỗi (minimal layout)
     concat: function (...args) {
         args.pop();
         return args.join('');
@@ -48,15 +51,21 @@ module.exports = {
     },
 
     // Helper cho phân trang
-
-    subtract: function(a, b) {
+    // phép trừ
+    subtract: function (a, b) {
         return a - b;
     },
 
-    times: function(n, block) {
+    // Tạo số thứ tự cho các phần tử trong danh sách (user.hbs)
+    times: function (n, block) {
         let accum = '';
-        for(let i = 1; i <= n; ++i)
+        for (let i = 1; i <= n; ++i)
             accum += block.fn(i);
         return accum;
+    },
+
+    // Chuyển đổi giá trị null thành 0
+    checkNull: function (value) {
+        return value !== null
     }
 };

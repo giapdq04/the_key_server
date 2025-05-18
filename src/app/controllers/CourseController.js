@@ -4,6 +4,8 @@ const Lesson = require("../models/Lesson");
 const extractPublicIdFromUrl = require("../../util/extractPublicIdFromUrl");
 const { cloudinary } = require('../../config/cloudinary');
 
+const parseNumberOrZero = value => parseFloat(value) || 0;
+const parseNumberOrNull = value => parseFloat(value) || null;
 
 class CourseController {
 
@@ -31,34 +33,10 @@ class CourseController {
         try {
             const { title, description, isActive, isPremium, price, salePrice } = req.body;
 
-            // Kiểm tra dữ liệu đầu vào
-            if (!title || !description || !req.file) {
-                return res.render('courses/create', {
-                    error: 'Hãy điền đầy đủ thông tin và tải lên ảnh thumbnail'
-                });
-            }
-
-            if (Boolean(isPremium)) {
-                if (!price || !salePrice) {
-                    return res.render('courses/create', {
-                        error: 'Hãy điền đầy đủ thông tin giá cho khóa học'
-                    });
-                }
-
-                if (parseFloat(price) < parseFloat(salePrice)) {
-                    return res.render('courses/create', {
-                        error: 'Giá bán không được lớn hơn giá gốc'
-                    });
-                }
-
-                if (parseFloat(price) < 0 || parseFloat(salePrice) < 0) {
-                    return res.render('courses/create', {
-                        error: 'Giá không được nhỏ hơn 0'
-                    });
-                }
-            }
-
-
+            const premium = isPremium == 'true'
+            const active = isActive == 'true'
+            const parsePrice = premium ? parseNumberOrZero(price) : null
+            const parseSalePrice = premium ? parseNumberOrNull(salePrice) : null
 
             // Lấy thông tin file đã được upload lên Cloudinary
             const thumbnail = req.file.path;
@@ -67,10 +45,10 @@ class CourseController {
                 title: title.trim(),
                 description: description.trim(),
                 thumbnail,
-                isActive: isActive === 'true',
-                isPremium: Boolean(isPremium),
-                price: Boolean(isPremium) ? parseFloat(price) : 0,
-                salePrice: Boolean(isPremium) ? parseFloat(salePrice) : 0
+                isActive: active,
+                isPremium: premium,
+                price: parsePrice,
+                salePrice: parseSalePrice
             });
 
             await course.save();
@@ -112,12 +90,19 @@ class CourseController {
     //[PUT] /courses/:id
     async update(req, res) {
         try {
-            const { title, description, currentThumbnail } = req.body;
+            const { title, description, currentThumbnail, isActive, isPremium, price, salePrice } = req.body;
+
+            const premium = isPremium == 'true'
+            const active = isActive == 'true'
 
             // Dữ liệu cập nhật
             const formData = {
                 title: title.trim(),
-                description: description.trim()
+                description: description.trim(),
+                isActive: active,
+                isPremium: premium,
+                price: premium ? parseNumberOrZero(price) : null,
+                salePrice: premium ? parseNumberOrNull(salePrice) : null
             };
 
             // Nếu có file ảnh mới được upload, sử dụng đường dẫn mới
@@ -131,7 +116,6 @@ class CourseController {
                     if (publicId) {
                         // Xóa ảnh cũ bất đồng bộ (không cần đợi kết quả)
                         cloudinary.uploader.destroy(publicId)
-                            .then(result => console.log('Deleted old thumbnail:', result))
                             .catch(err => console.error('Error deleting old thumbnail:', err));
                     }
                 }
