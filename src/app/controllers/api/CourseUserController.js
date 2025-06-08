@@ -235,6 +235,26 @@ class CourseUserController {
         }
     }
 
+    async getCourseBySlug(req, res) {
+        try {
+            const { slug } = req.params;
+
+            const course = await Course.findOne({ slug, isActive: true }).select('title description thumbnail price salePrice isPremium').lean();
+
+            if (!course) {
+                return res.status(404).json({ message: "Course not found" });
+            }
+
+            const lessonCount = await Lesson.countDocuments({ courseID: course._id });
+
+
+            res.status(200).json({ ...course, lessonCount });
+        } catch (error) {
+            console.error(error)
+            res.status(500).json({ message: error.message })
+        }
+    }
+
 
 }
 

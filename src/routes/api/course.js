@@ -8,5 +8,6 @@ router.get('/course-detail/:slug', courseUserCtrl.showCourseDetail)
 
 router.get('/:slug/:userID', courseUserCtrl.getCourseUser)
 router.post('/enroll', courseUserCtrl.enrollCourse)
+router.get('/:slug', courseUserCtrl.getCourseBySlug)
 
 module.exports = router;

@@ -4,3 +4,4 @@ src/public/css
 .env
 .env.development
 .env.production
+.vscode/
