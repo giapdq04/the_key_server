@@ -2,6 +2,7 @@ const { default: mongoose } = require("mongoose");
 const Course = require("../../models/Course");
 const Order = require("../../models/Order");
 const BankAccount = require("../../models/BankAccount");
+const OrderStatus = require("../../../constants/OrderStatus");
 
 class OrderController {
 
@@ -22,7 +23,7 @@ class OrderController {
             const newOrder = new Order({
                 userId,
                 courseId,
-                payment_status: "Unpaid"
+                payment_status: OrderStatus.UNPAID
             })
 
             await newOrder.save();
@@ -48,9 +49,8 @@ class OrderController {
                 return res.status(401).json({ message: 'Unauthorized' });
             }
 
-
             const transaction = req.body;
-            console.log('Webhook received:', req.body);
+            console.log('Webhook received:', transaction);
 
             const orderId = transaction.content.match(/\b[a-f0-9]{24}\b/gi)[0];
 
@@ -60,17 +60,17 @@ class OrderController {
                 return res.status(404).json({ message: 'Order not found' });
             }
 
-            const product = await Product.findById(order.courseId).select('price');
+            const course = await Course.findById(order.courseId).select('price');
 
-            if (product.price !== transaction.transferAmount) {
-                console.log("Số tiền không hợp lệ:", product.price, transaction.transferAmount);
+            if (course.price !== transaction.transferAmount) {
+                console.log("Số tiền không hợp lệ:", course.price, transaction.transferAmount);
                 return res.status(400).json({ message: 'Số tiền không hợp lệ' });
             }
 
             await Order.updateOne(
                 { _id: orderId },
                 {
-                    payment_status: 'Paid',
+                    payment_status: OrderStatus.PAID,
                 }
             )
 
