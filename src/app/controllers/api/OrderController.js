@@ -7,6 +7,7 @@ class OrderController {
 
     async createOrder(req, res) {
         try {
+            console.log('Đã tạo đơn hàng')
             const { userId, courseId } = req.body;
 
             if (!userId || !courseId) {
@@ -41,6 +42,7 @@ class OrderController {
 
     async sepayCallWebhook(req, res) {
         try {
+            console.log('Đã nhận webhook từ Sepay');
             const apiKey = req.headers.authorization.replace('Apikey ', '');
             const secretKey = process.env.SEPAY_SECRET_KEY;
 
